@@ -163,3 +163,4 @@ cython_debug/
 # Repo specific ignores
 **/.DS_Store
 data/
+**/.virtual_documents
