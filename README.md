@@ -4,6 +4,10 @@ Computer vision project to determine emotion of a face.
 
 This repo is a revisitation of my [emotion_face_classification](https://github.com/dlumian/emotion_face_classification) repo from 2018.
 
+## Sections
+- [Data Sources](#Data-Sources)
+- [FER 2013](#FER-2013)
+
 ## Data Sources
 
 Data comes from two Kaggle datasets on emotional face recognition. Overlapping similarities of the two datasets are listed here. Unique features are below each data link. Data can be downloaded from the links and then saved into the structure specified below. Different organization is due to variation in how original data was stored. 
@@ -21,4 +25,12 @@ Data comes from two Kaggle datasets on emotional face recognition. Overlapping s
         - Test path: `EmotionFaceClassifier/data/frd2020/Testing/Emotion`
 
 
+## FER 2013
 
+### Visualizations
+
+![FER 2013 Summary](./imgs/FER2013_skim.svg)
+
+![FER 2013 Count Summary](./imgs/FER2013_counts_skim.svg)
+
+![FER 2013 Count Barplot](./imgs/FER2013_count_bar.png)
