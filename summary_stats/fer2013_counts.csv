@@ -1,8 +1,8 @@
-EmotionLabel,EmotionId,TotalImages,Training,TrainingPerc,PublicTest,PublicTestPerc,PrivateTest,PrivateTestPerc
-Angry,0,4953,3995,80.66,467,9.43,491,9.91
-Disgust,1,547,436,79.71,56,10.24,55,10.05
-Fear,2,5121,4097,80.0,496,9.69,528,10.31
-Happy,3,8989,7215,80.26,895,9.96,879,9.78
-Sad,4,6077,4830,79.48,653,10.75,594,9.77
-Surprise,5,4002,3171,79.24,415,10.37,416,10.39
-Neutral,6,6198,4965,80.11,607,9.79,626,10.1
+Emotion,TotalImages,Training,TrainingPerc,PublicTest,PublicTestPerc,PrivateTest,PrivateTestPerc
+Angry,4953,3995,80.66,467,9.43,491,9.91
+Disgust,547,436,79.71,56,10.24,55,10.05
+Fear,5121,4097,80.0,496,9.69,528,10.31
+Happy,8989,7215,80.26,895,9.96,879,9.78
+Neutral,6198,4965,80.11,607,9.79,626,10.1
+Sad,6077,4830,79.48,653,10.75,594,9.77
+Surprise,4002,3171,79.24,415,10.37,416,10.39
