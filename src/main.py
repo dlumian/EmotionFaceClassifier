@@ -34,21 +34,26 @@ def check_directory_name(target_name) -> bool:
         # Recursively call the function to check the parent directory
         return check_directory_name(target_name)
 
-# Function to update layout with consistent styling and flexible parameters
 def apply_default_styling(fig, title, xaxis_title, yaxis_title, 
                           legend_title=None, 
-                        #   color_discrete_sequence=px.colors.qualitative.Bold, 
                           labels=None):
-    # Apply the color sequence
-    # fig.update_traces(marker=dict(color=color_discrete_sequence))
-    # fig.update_traces(textfont_size = 14, textangle = 0, textposition = "outside")
+    """ Function to update layout with consistent styling and flexible parameters
 
+    Args:
+        fig (plotly.graph_objects.Figure): Figure for formatting
+        title (str): Main title for graph
+        xaxis_title (str): Title for x-axis of graph
+        yaxis_title (str): Title for y-axis of graph
+        legend_title (str, optional): Title for figure legend. Defaults to None.
+
+    Returns:
+        plotly.graph_objects.Figure: Plotly figure with updated formatting
+    """    
     # Update layout for title and fonts
     fig.update_layout(
         title={
             'text': title,
             'y': 0.95,
-            # 'y': 1.0,
             'x': 0.5,
             'xanchor': 'center',
             'yanchor': 'top'
@@ -66,12 +71,20 @@ def apply_default_styling(fig, title, xaxis_title, yaxis_title,
     if legend_title is not None:
         fig.update_layout(legend_title_text=legend_title)
     
-    if labels is not None:
-        fig.update_layout(xaxis_title=labels.get('x', xaxis_title), yaxis_title=labels.get('y', yaxis_title))
-    
     return fig
 
 def add_bar_totals(fig, df, col, y_offset=1000):
+    """Adds sum of stacked bar graph to each column
+
+    Args:
+        fig (plotly.graph_objects.Figure): Figure to update
+        df (pandas.DataFrame): DF with totals to add
+        col (str): Column name from df with relevant totals
+        y_offset (int, optional): How far to move title vertically. Defaults to 1000.
+
+    Returns:
+        plotly.graph_objects.Figure: Plotly stacked bar graph with totals annotated
+    """    
     total_counts = df[col].to_list()
     for i, total in enumerate(total_counts):
         fig.add_annotation(
@@ -89,14 +102,20 @@ def add_bar_totals(fig, df, col, y_offset=1000):
     return fig
 
 def show_example_images(df, group_col='emotion', image_col='image', save_path=None, samples=1):  
-    # fig=plt.figure(figsize=(10, 3))
+    """Displays and optionally saves exampled images from each category of expression
+
+    Args:
+        df (pd.DataFrame): df with input data
+        group_col (str, optional): Column with groups. Defaults to 'emotion'.
+        image_col (str, optional): Column with image arrays. Defaults to 'image'.
+        save_path (_type_, optional): Path to save plot. If None figure not saved. Defaults to None.
+        samples (int, optional): N of images to use. Defaults to 1.
+    """    
     n_cols = df[group_col].nunique()
     n_rows = samples
-
     fig_width = 10
     fig_height = samples * 2
     
-    # fig, axes = plt.subplots(nrows=n_rows, ncols=n_cols, squeeze=False, figsize=(num_images_per_row * 5, num_rows * 5))
     fig, axes = plt.subplots(nrows=n_rows, ncols=n_cols, squeeze=False, figsize=(fig_width, fig_height))
 
     for i in range(n_rows):
@@ -124,10 +143,10 @@ def convert_pixels_to_array(pixels):
     array = np.array(array, dtype='uint8')
     return array
 
-class EmoFaceClassifier():
-    '''
-    Class for ingesting, analyzing, and predicting emotional facial expressions
-    '''
+# class EmoFaceClassifier():
+#     '''
+#     Class for ingesting, analyzing, and predicting emotional facial expressions
+#     '''
 
-    def __init__(self) -> None:
-        pass
+#     def __init__(self) -> None:
+#         pass
