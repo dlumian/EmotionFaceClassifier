@@ -5,7 +5,8 @@ import matplotlib.patches as patches
 from plotly.graph_objects import Figure
 
 def show_example_images(df, group_col='emotion', image_col='image', 
-                        col_col='color', save_path=None, samples=1):  
+                        col_col='color', save_path=None, samples=1,
+                        title='Example FER2013 Faces'):  
     """Displays and optionally saves exampled images from each category of expression
 
     Args:
@@ -36,13 +37,21 @@ def show_example_images(df, group_col='emotion', image_col='image',
     for col_idx, (label, color) in enumerate(zip(emo_labels, emo_colors)):
         axes[0, col_idx].set_title(f"{label}", color=color)
 
+
+    fig, axes = apply_default_matplotlib_styling(
+            fig=fig, axs=axes, 
+            title=title
+        )
+
     plt.tight_layout()    
     if save_path:
         plt.savefig(save_path)
-    plt.show()
+    # plt.show()
     plt.close()
+    return fig, axes
 
-def apply_default_styling(fig, title, xaxis_title, yaxis_title, legend_title=None):
+def apply_default_plotly_styling(fig, title, xaxis_title=None, 
+                          yaxis_title=None, legend_title=None):
     """ Function to update layout with consistent styling and flexible parameters
 
     Args:
@@ -68,16 +77,65 @@ def apply_default_styling(fig, title, xaxis_title, yaxis_title, legend_title=Non
             size=14,
             color="black"
         ),
-        xaxis_title=xaxis_title,
-        yaxis_title=yaxis_title,
         title_font=dict(size=24)
     )
+
+    if xaxis_title is not None:
+        fig.update_layout( xaxis_title=xaxis_title)
+
+    if yaxis_title is not None:
+        fig.update_layout(yaxis_title=yaxis_title)
 
     if legend_title is not None:
         fig.update_layout(legend_title_text=legend_title)
     
     return fig
 
+# def apply_default_matplotlib_styling(fig, ax, title, xaxis_title=None, 
+#                           yaxis_title=None, legend_title=None):
+
+#     fig.suptitle(title, fontsize=24, fontname="Arial", color="black", 
+#                  y=0.95, x=0.5, ha='center', va='top')
+
+#     # Set axis labels with specified font properties
+#     ax.set_xlabel("X Axis", fontsize=14, fontname="Arial", color="black")
+#     ax.set_ylabel("Y Axis", fontsize=14, fontname="Arial", color="black")
+    
+#     # Customize font properties for tick labels
+#     for label in (ax.get_xticklabels() + ax.get_yticklabels()):
+#         label.set_fontname("Arial")
+#         label.set_fontsize(14)
+#         label.set_color("black")
+
+#     return fig, ax
+
+def apply_default_matplotlib_styling(fig, axs, title, xaxis_title=None, 
+                          yaxis_title=None, legend_title=None):
+    # Set the figure title
+    fig.suptitle(title, fontsize=24, fontname="Arial", color="black", 
+                 y=0.95, x=0.5, ha='center', va='top')
+    
+    # Check if axs is a single Axes object or an array of Axes
+    if not isinstance(axs, np.ndarray):
+        axs = [axs]
+
+    # Flatten the array if it is multi-dimensional
+    axs = np.ravel(axs)
+
+    # Set axis labels and customize tick labels for each subplot
+    for ax in axs:
+        if xaxis_title:
+            ax.set_xlabel(xaxis_title, fontsize=14, 
+                          fontname="Arial", color="black")
+        if yaxis_title:
+            ax.set_ylabel(yaxis_title, fontsize=14, 
+                          fontname="Arial", color="black")
+        
+        for label in (ax.get_xticklabels() + ax.get_yticklabels()):
+            label.set_fontname("Arial")
+            label.set_fontsize(14)
+            label.set_color("black")
+    return fig, axs
 
 def add_bar_totals(fig, df, col, y_offset=1000):
     """Adds sum of stacked bar graph to each column
