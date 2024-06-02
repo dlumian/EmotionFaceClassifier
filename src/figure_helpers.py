@@ -6,7 +6,7 @@ from plotly.graph_objects import Figure
 
 def show_example_images(df, group_col='emotion', image_col='image', 
                         col_col='color', save_path=None, samples=1,
-                        title='Example FER2013 Faces'):  
+                        title='Example FER2013 Faces', display=False):  
     """Displays and optionally saves exampled images from each category of expression
 
     Args:
@@ -15,6 +15,10 @@ def show_example_images(df, group_col='emotion', image_col='image',
         image_col (str, optional): Column with image arrays. Defaults to 'image'.
         save_path (_type_, optional): Path to save plot. If None figure not saved. Defaults to None.
         samples (int, optional): N of images to use. Defaults to 1.
+        title (str, optional): Overall title. Defaults to 'Example FER2013 Faces'.
+
+    Returns:
+        plt.Figure, plt.axs: Matplotlib figure and axes from subplot figure
     """    
     n_cols = df[group_col].nunique()
     n_rows = samples
@@ -22,10 +26,10 @@ def show_example_images(df, group_col='emotion', image_col='image',
     fig_height = samples * 2
 
     # Dictionary to store emotion titles and corresponding subplots
-    sorted_df = df.sort_values(by='emotion')
-    emo_labels = sorted_df['emotion'].unique().tolist()
+    sorted_df = df.sort_values(by=group_col)
+    emo_labels = sorted_df[group_col].unique().tolist()
     emotion_axes = {emotion: [] for emotion in emo_labels}
-    emotion_color_dict = sorted_df[['emotion', 'color']].drop_duplicates().set_index('emotion')['color'].to_dict()
+    emotion_color_dict = sorted_df[[group_col, col_col]].drop_duplicates().set_index(group_col)[col_col].to_dict()
 
     fig, axes = plt.subplots(nrows=n_rows, ncols=n_cols, squeeze=False, figsize=(fig_width, fig_height))
 
@@ -37,7 +41,7 @@ def show_example_images(df, group_col='emotion', image_col='image',
             ax = axes[i, idx]
             ax.imshow(np.array(row[image_col]), cmap='gray')
             ax.axis('off')
-            emotion_axes[row['emotion']].append(ax)
+            emotion_axes[row[group_col]].append(ax)
 
     # Add column labels (emotion) in defined color
     for col_idx, label in enumerate(emo_labels):
@@ -69,7 +73,8 @@ def show_example_images(df, group_col='emotion', image_col='image',
 
     if save_path:
         plt.savefig(save_path)
-    # plt.show()
+    if display:
+        plt.show()
     plt.close()
     return fig, axes
 
