@@ -20,9 +20,16 @@ def show_example_images(df, group_col='emotion', image_col='image',
     n_rows = samples
     fig_width = 10
     fig_height = samples * 2
-    
+
+    # Dictionary to store emotion titles and corresponding subplots
+    sorted_df = df.sort_values(by='emotion')
+    emo_labels = sorted_df['emotion'].unique().tolist()
+    emotion_axes = {emotion: [] for emotion in emo_labels}
+    emotion_color_dict = sorted_df[['emotion', 'color']].drop_duplicates().set_index('emotion')['color'].to_dict()
+
     fig, axes = plt.subplots(nrows=n_rows, ncols=n_cols, squeeze=False, figsize=(fig_width, fig_height))
 
+    # For each number of samples requested, pull 1 example of each emotion
     for i in range(n_rows):
         samples_df = df.groupby(group_col).sample(n=1).reset_index()
         samples_df.sort_values(by=group_col, inplace=True)
@@ -30,20 +37,36 @@ def show_example_images(df, group_col='emotion', image_col='image',
             ax = axes[i, idx]
             ax.imshow(np.array(row[image_col]), cmap='gray')
             ax.axis('off')
+            emotion_axes[row['emotion']].append(ax)
 
-    # Add titles to each column
-    emo_labels = samples_df[group_col].to_list()
-    emo_colors = samples_df[col_col].to_list()
-    for col_idx, (label, color) in enumerate(zip(emo_labels, emo_colors)):
-        axes[0, col_idx].set_title(f"{label}", color=color)
+    # Add column labels (emotion) in defined color
+    for col_idx, label in enumerate(emo_labels):
+        axes[0, col_idx].set_title(f"{label}", color=emotion_color_dict[label])
 
-
+    # Format fonts for output to be consistent and match plotly
     fig, axes = apply_default_matplotlib_styling(
             fig=fig, axs=axes, 
             title=title
         )
 
+    # Improves layout structure for saving images
+    # MUST be called before adding color frames (changes layout)
     plt.tight_layout()    
+
+    # Add colored frames to each example by emo label
+    for emotion, e_axs in emotion_axes.items():
+        for ax in e_axs:
+            # Get the position of the current subplot
+            pos = ax.get_position()
+            # Create a rectangle with the same position and add it to the figure
+            rect = patches.Rectangle((pos.x0, pos.y0), pos.width, pos.height,
+                                     linewidth=5, 
+                                     edgecolor=emotion_color_dict[emotion], 
+                                     facecolor='none', 
+                                     transform=fig.transFigure
+                                )
+            fig.patches.append(rect)
+
     if save_path:
         plt.savefig(save_path)
     # plt.show()
@@ -91,24 +114,6 @@ def apply_default_plotly_styling(fig, title, xaxis_title=None,
     
     return fig
 
-# def apply_default_matplotlib_styling(fig, ax, title, xaxis_title=None, 
-#                           yaxis_title=None, legend_title=None):
-
-#     fig.suptitle(title, fontsize=24, fontname="Arial", color="black", 
-#                  y=0.95, x=0.5, ha='center', va='top')
-
-#     # Set axis labels with specified font properties
-#     ax.set_xlabel("X Axis", fontsize=14, fontname="Arial", color="black")
-#     ax.set_ylabel("Y Axis", fontsize=14, fontname="Arial", color="black")
-    
-#     # Customize font properties for tick labels
-#     for label in (ax.get_xticklabels() + ax.get_yticklabels()):
-#         label.set_fontname("Arial")
-#         label.set_fontsize(14)
-#         label.set_color("black")
-
-#     return fig, ax
-
 def apply_default_matplotlib_styling(fig, axs, title, xaxis_title=None, 
                           yaxis_title=None, legend_title=None):
     # Set the figure title
@@ -135,6 +140,7 @@ def apply_default_matplotlib_styling(fig, axs, title, xaxis_title=None,
             label.set_fontname("Arial")
             label.set_fontsize(14)
             label.set_color("black")
+    
     return fig, axs
 
 def add_bar_totals(fig, df, col, y_offset=1000):
