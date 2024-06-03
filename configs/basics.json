@@ -21,5 +21,15 @@
         "Sad": "blue", 
         "Surprise": "darkviolet",
         "Neutral": "slategray"
-    }
+    },
+    "output_col_order": [
+        "Emotion",
+        "TotalImages",
+        "Training",
+        "TrainingPerc",
+        "PublicTest",
+        "PublicTestPerc", 
+        "PrivateTest", 
+        "PrivateTestPerc"
+    ]
 }
