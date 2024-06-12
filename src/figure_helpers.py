@@ -183,7 +183,7 @@ def waffle_chart(df, group_col='Emotion', data_col='TotalImages',
                  color_dict=None
                  ):
     
-    waffle_df = df.sort_values(by=data_col)
+    waffle_df = df.sort_values(by=data_col, ascending=False)
     # Calculate the number of squares for each category
     waffle_df.loc[:, 'Squares'] = (waffle_df[data_col] / waffle_df[data_col].sum() * total_squares).round().astype(int)
 
@@ -222,7 +222,7 @@ def waffle_chart(df, group_col='Emotion', data_col='TotalImages',
     # Add a text box with the number of images per box
     fig.add_trace(go.Scatter(
         x=[grid_size - 1], y=[-2],
-        text=[f'Each box represents ~{images_per_box:.1f} images'],
+        text=[f'Approximately {images_per_box:.1f} images represented per box.'],
         mode='text',
         showlegend=False
     ))
@@ -241,7 +241,7 @@ def waffle_chart(df, group_col='Emotion', data_col='TotalImages',
             showgrid=False, zeroline=False, showticklabels=False
         ),
         showlegend=True,
-        # legend_title_text='Category',
+        legend_traceorder="reversed",
         autosize=False,
         width=600,  # Adjust the width of the figure
         height=600  # Adjust the height of the figure

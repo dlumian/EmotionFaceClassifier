@@ -1,6 +1,6 @@
 {
     "usage_dict": {
-        "Training": "Training",
+        "Training": "Train",
         "PublicTest": "Test",
         "PrivateTest": "Test"
     }, 

@@ -43,9 +43,10 @@ def convert_pixels_to_array(pixels):
     array = np.array(array, dtype='uint8')
     return array
 
-# Convert string pixel data to numpy arrays
 def str_to_array(pixel_str):
-    return np.array(ast.literal_eval(pixel_str), dtype=np.uint8)
+    'Convert string pixel data to numpy arrays'
+    clean_strs = pixel_str.replace(',', '').split()
+    return np.array(clean_strs, dtype=np.uint8)
 
 def load_config(file_path):
     with open(file_path, 'r') as file:
