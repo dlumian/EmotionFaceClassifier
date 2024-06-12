@@ -1,0 +1,37 @@
+{
+    "LogisticRegression": {
+        "module": "sklearn.linear_model",
+        "class": "LogisticRegression",
+        "params": {
+            "multi_class": "multinomial",
+            "max_iter": 200
+        }
+    },
+    "DecisionTree": {
+        "module": "sklearn.tree",
+        "class": "DecisionTreeClassifier",
+        "params": {}
+    },
+    "RandomForest": {
+        "module": "sklearn.ensemble",
+        "class": "RandomForestClassifier",
+        "params": {}
+    },
+    "GradientBoosting": {
+        "module": "sklearn.ensemble",
+        "class": "GradientBoostingClassifier",
+        "params": {}
+    },
+    "XGBoost": {
+        "module": "xgboost",
+        "class": "XGBClassifier",
+        "params": {
+            "eval_metric": "mlogloss"
+        }
+    },
+    "LGBM": {
+        "module": "lightgbm",
+        "class": "LGBMClassifier",
+        "params": {}
+    }
+}
