@@ -165,4 +165,7 @@ cython_debug/
 data/
 **/.virtual_documents
 **/archive/
-**/models/
+**/*.pkl
+**/mdl.json
+models/flat/train_df.csv
+models/flat/y_train.csv
