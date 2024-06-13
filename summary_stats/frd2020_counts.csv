@@ -1,0 +1,7 @@
+Emotion,TotalImages,Training,TrainingPerc,Testing,TestingPerc
+Angry,4953,3995,80.66,958,19.34
+Fear,5121,4097,80.0,1024,20.0
+Happy,8989,7215,80.26,1774,19.74
+Neutral,6198,4965,80.11,1233,19.89
+Sad,6077,4830,79.48,1247,20.52
+Surprise,4002,3171,79.24,831,20.76

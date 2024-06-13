@@ -17,11 +17,6 @@
         "class": "RandomForestClassifier",
         "params": {}
     },
-    "GradientBoosting": {
-        "module": "sklearn.ensemble",
-        "class": "GradientBoostingClassifier",
-        "params": {}
-    },
     "XGBoost": {
         "module": "xgboost",
         "class": "XGBClassifier",

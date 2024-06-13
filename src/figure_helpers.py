@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import plotly.graph_objects as go
+from PIL import Image
 
 from plotly.graph_objects import Figure
 
@@ -41,7 +42,12 @@ def show_example_images(df, group_col='emotion', image_col='image',
         samples_df.sort_values(by=group_col, inplace=True)
         for idx, row in samples_df.iterrows():
             ax = axes[i, idx]
-            ax.imshow(np.array(row[image_col]), cmap='gray')
+
+            if image_col == 'Full Path':
+                ax.imshow(Image.open(row[image_col]), cmap='gray')
+            else:
+                ax.imshow(np.array(row[image_col]), cmap='gray')
+
             ax.axis('off')
             emotion_axes[row[group_col]].append(ax)
 
