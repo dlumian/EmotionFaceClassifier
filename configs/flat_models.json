@@ -1,4 +1,9 @@
 {
+    "LGBM": {
+        "module": "lightgbm",
+        "class": "LGBMClassifier",
+        "params": {}
+    },
     "LogisticRegression": {
         "module": "sklearn.linear_model",
         "class": "LogisticRegression",
@@ -23,10 +28,5 @@
         "params": {
             "eval_metric": "mlogloss"
         }
-    },
-    "LGBM": {
-        "module": "lightgbm",
-        "class": "LGBMClassifier",
-        "params": {}
     }
 }

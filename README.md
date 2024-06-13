@@ -12,7 +12,7 @@ This repo is a revisitation of my [emotion_face_classification](https://github.c
 - [Data Sources](#data-sources)
     - [FER 2013](#kaggle-fer2013)
     - [FRD 2020](#kaggle-facial-recognition-dataset)
-- EDA
+- [EDA and Summary Statistics](#eda-and-summary-statistics)
 
 ## Data Sources
 
@@ -29,6 +29,7 @@ Data comes from two Kaggle datasets. Overlapping similarities of the two dataset
     - Stored as pixel values in a csv file
     - Includes `Disgust` as additional category
     - When uncompressed, move `fer2013.csv` into path: `EmotionFaceClassifier/data/fer2013/fer2013.csv`
+    - To facilitate analysis design with both datasets, [Image Generator notebook](./notebooks/FER2013_Image_Generator.ipynb) creates jpg files from csv data using same naming conventions as FRD2020 dataset
 
 
 ### [Kaggle Facial Recognition Dataset](https://www.kaggle.com/datasets/apollo2506/facial-recognition-dataset/data)

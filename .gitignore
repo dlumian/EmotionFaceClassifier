@@ -169,3 +169,5 @@ data/
 **/mdl.json
 models/flat/train_df.csv
 models/flat/y_train.csv
+**/mdl.txt
+**/model.txt

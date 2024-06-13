@@ -1,8 +1,8 @@
 {
     "usage_dict": {
-        "Training": "Train",
-        "PublicTest": "Test",
-        "PrivateTest": "Test"
+        "Training": "Training",
+        "PublicTest": "Testing",
+        "PrivateTest": "Testing"
     }, 
     "emo_dict": {
         "0": "Angry", 

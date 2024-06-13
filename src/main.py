@@ -109,9 +109,10 @@ def save_model(model, filename):
         joblib.dump(model, filename)
     elif 'xgboost' in module_path:
         json_path = filename.replace('.pkl', '.json')
-        model.save_model(filename)
+        model.save_model(json_path)
     elif 'lightgbm' in module_path:
-        model.save_model(filename)
+        txt_path = filename.replace('.pkl', '.txt')
+        model.booster_.save_model(txt_path)
     else:
         print(f'Module path: {module_path}.')
         raise ValueError("Unsupported library")
