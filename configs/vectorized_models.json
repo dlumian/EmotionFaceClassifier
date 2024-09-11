@@ -1,0 +1,32 @@
+{
+    "LGBM": {
+        "module": "lightgbm",
+        "class": "LGBMClassifier",
+        "params": {}
+    },
+    "LogisticRegression": {
+        "module": "sklearn.linear_model",
+        "class": "LogisticRegression",
+        "params": {
+            "multi_class": "multinomial",
+            "max_iter": 500
+        }
+    },
+    "DecisionTree": {
+        "module": "sklearn.tree",
+        "class": "DecisionTreeClassifier",
+        "params": {}
+    },
+    "RandomForest": {
+        "module": "sklearn.ensemble",
+        "class": "RandomForestClassifier",
+        "params": {}
+    },
+    "XGBoost": {
+        "module": "xgboost",
+        "class": "XGBClassifier",
+        "params": {
+            "eval_metric": "mlogloss"
+        }
+    }
+}

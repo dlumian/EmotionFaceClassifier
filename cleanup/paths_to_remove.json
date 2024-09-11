@@ -1,0 +1,11 @@
+{
+    "file_patterns": {
+        "Training": "Training",
+        "PublicTest": "Testing",
+        "PrivateTest": "Testing"
+    }, 
+    "directories": [
+        "models",
+        "imgs"
+    ]
+}
