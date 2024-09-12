@@ -4,6 +4,35 @@ import glob
 import nbformat
 from nbconvert.preprocessors import ClearOutputPreprocessor, ExecutePreprocessor
 
+def check_directory_name(target_name) -> bool:
+    """
+    Check if the current directory name matches the target_name.
+    If not, move up a directory and repeat the check.
+    
+    Args:
+        target_name (str): The directory name to match.
+        
+    Returns:
+        bool: True if the current directory name matches the target_name, False otherwise.
+    """
+    # Get the current directory path
+    current_dir = os.getcwd()
+    # Extract the directory name from the path
+    current_dir_name = os.path.basename(current_dir)    
+    # Check if the current directory name matches the target_name
+    if current_dir_name == target_name:
+        print(f'Directory set to {current_dir}, matches target dir sting {target_name}.')
+        return True
+    else:
+        # Move up a directory
+        os.chdir('..')
+        # Check if we have reached the root directory
+        if os.getcwd() == current_dir:
+            return False
+        # Recursively call the function to check the parent directory
+        return check_directory_name(target_name)
+
+
 def remove_files(file_patterns):
     for pattern in file_patterns:
         for file in glob.glob(pattern):
@@ -55,7 +84,8 @@ def reset_project():
     directories = [
         'data/intermediate/',
         'models/',
-        'metrics/'
+        'metrics/',
+        'imgs'
     ]
     
     # Remove files and directories
@@ -63,13 +93,15 @@ def reset_project():
     remove_directories(directories)
     
     # Reset notebooks
-    reset_notebooks('notebooks')  # Adjust 'notebooks' to your notebook directory path
+    reset_notebooks('notebooks') 
     
     print("Project reset completed.")
 
 if __name__ == "__main__":
     confirm = input("Are you sure you want to reset the project? This will delete intermediate files, directories, and reset notebooks. (yes/no): ")
     if confirm.lower() == 'yes':
+        main_dir = 'EmotionFaceClassifier'
+        check_directory_name(main_dir)
         reset_project()
     else:
         print("Project reset aborted.")
