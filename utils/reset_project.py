@@ -1,7 +1,6 @@
 import os
 import shutil
 import glob
-import nbformat
 from nbconvert.preprocessors import ClearOutputPreprocessor, ExecutePreprocessor
 
 def check_directory_name(target_name) -> bool:
