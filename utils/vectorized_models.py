@@ -1,6 +1,8 @@
 import os
 import json
+import numpy as np
 import pandas as pd
+from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import classification_report, confusion_matrix
 
 module_name = 'utils'
@@ -21,20 +23,23 @@ else:
     print(f"{module_name} is already available.")
 
 from utils.helpers import (
-    load_config
+    load_config,
+    check_directory_name,
+    load_images_and_labels
 )
 
-# def load_data_and_labels(data_path, labels_path):
-#     """Load the training data and labels from the specified paths."""
-#     # Load X and y data
-#     X_train = ...  # Load your X_train data here
-#     y_train = ...  # Load your y_train data here
-    
-#     # Load labels from JSON
-#     with open(labels_path, 'r') as f:
-#         labels = json.load(f)
-    
-#     return X_train, y_train, labels
+
+def create_train_test_splits(data_path_dict, usage='Training'):
+    img_df_list = []
+    lbl_df_list =[]
+    for _, data_path in data_path_dict.items():
+        full_data_path = os.path.join(data_path, usage)
+        imgs_df, labels_df = load_images_and_labels(full_data_path)
+        img_df_list.append(imgs_df)
+        lbl_df_list.append(labels_df)
+    concatenated_img_df = pd.concat(img_df_list, ignore_index=True)
+    concatenated_label_df = pd.concat(lbl_df_list, ignore_index=True)
+    return concatenated_img_df, concatenated_label_df
 
 def train_and_evaluate_model(model_params, X_train, y_train, labels):
     """Train the model, evaluate it, and save the metrics."""
@@ -92,11 +97,31 @@ def main(data_path, labels_path, output_dir, models):
     print(summary_df)
 
 if __name__ == "__main__":
-    # Define paths
-    data_path = 'path/to/data'
-    labels_path = 'path/to/labels.json'
-    output_dir = 'path/to/save/model/metrics'
+    # Ensure current working directory
+    main_dir = 'EmotionFaceClassifier'
+    check_directory_name(main_dir)
 
+    # Load input data paths from JSON
+    input_data_paths = load_config('./configs/input_mappings.json')
+    input_paths = input_data_paths["img_directories"]
+
+    X_train, y_train = create_train_test_splits(input_paths, usage='Training')
+
+    le = LabelEncoder()
+    y_train_encoded = le.fit_transform(y_train)
+
+    # Set output paths
+    intermediate_data_path = os.path.join('data', 'intermediate_data')
+    os.makedirs(intermediate_data_path, exist_ok=True)
+
+    train_imgs_path = os.path.join(intermediate_data_path, 'combined_train_images.npy')
+    train_labels_path = os.path.join(intermediate_data_path, 'combined_train_labels.npy')
+    train_labels_encode_path = os.path.join(intermediate_data_path, 'combined_train_labels_encoded.npy')
+
+    # Save the combined datasets
+    np.save(train_imgs_path, X_train)
+    np.save(train_labels_path, y_train)
+    np.save(train_labels_encode_path, y_train_encoded)
 
     # Load model params from JSON
     vectorized_models = load_config('./configs/vectorized_models.json')

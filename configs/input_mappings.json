@@ -47,5 +47,9 @@
         "TrainingPerc",
         "Testing",
         "TestingPerc"
-    ]
+    ],
+    "img_directories": {
+        "fer2013": "data/fer2013",
+        "frd2020": "data/frd2020"
+    }
 }
