@@ -1,5 +1,8 @@
 import os
-import json
+import sys
+import joblib
+import inspect
+import importlib
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
@@ -24,25 +27,86 @@ else:
 
 from utils.helpers import (
     load_config,
+    to_json,
     check_directory_name,
     load_images_and_labels
 )
 
 
 def create_train_test_splits(data_path_dict, usage='Training'):
-    img_df_list = []
-    lbl_df_list =[]
+    img_arr_list = []
+    lbl_arr_list =[]
     for _, data_path in data_path_dict.items():
         full_data_path = os.path.join(data_path, usage)
-        imgs_df, labels_df = load_images_and_labels(full_data_path)
-        img_df_list.append(imgs_df)
-        lbl_df_list.append(labels_df)
-    concatenated_img_df = pd.concat(img_df_list, ignore_index=True)
-    concatenated_label_df = pd.concat(lbl_df_list, ignore_index=True)
-    return concatenated_img_df, concatenated_label_df
+        imgs_arr, labels_arr = load_images_and_labels(full_data_path)
+        img_arr_list.append(imgs_arr)
+        lbl_arr_list.append(labels_arr)
+    concatenated_img_arr = np.concatenate(img_arr_list, axis=0)
+    concatenated_label_arr = np.concatenate(lbl_arr_list, axis=0)
+    print(f'Shape of X array is: {concatenated_img_arr.shape}.')
+    print(f'Shape of y array is: {concatenated_label_arr.shape}.')
+    return concatenated_img_arr, concatenated_label_arr
 
-def train_and_evaluate_model(model_params, X_train, y_train, labels):
+def instantiate_model(model_config):
+    'Function to create model instances from the configuration'
+    module = importlib.import_module(model_config['module'])
+    model_class = getattr(module, model_config['class'])
+    model= model_class(**model_config['params'])
+    return model
+
+def get_classification_metrics(y_true, y_pred):
+    'calculates metrics on classifier performance'
+    metrics = {
+            'accuracy': accuracy_score(y_true, y_pred),
+            'precision': precision_score(y_true, y_pred, average='weighted'),
+            'recall': recall_score(y_true, y_pred, average='weighted'),
+            'f1_score': f1_score(y_true, y_pred, average='weighted')
+        }
+    return metrics
+
+def get_module_path(class_object):
+    """Get the module path from a class object.
+
+    Args:
+        class_object: The class object.
+
+    Returns:
+        The module path, or None if the module path cannot be determined.
+    """
+
+    module = inspect.getmodule(class_object)
+    if module is None:
+        return None
+
+    return module.__file__
+
+def save_model(model, filename):
+    'Saves model based on type'
+    module_path = get_module_path(model)
+
+    if '_logistic' in module_path:
+        joblib.dump(model, filename)
+    elif 'tree/_classes' in module_path:
+        joblib.dump(model, filename)
+    elif 'ensemble/_forest' in module_path:
+        joblib.dump(model, filename)
+    elif 'ensemble/_gb' in module_path:
+        joblib.dump(model, filename)
+    elif 'xgboost' in module_path:
+        json_path = filename.replace('.pkl', '.json')
+        model.save_model(json_path)
+    elif 'lightgbm' in module_path:
+        txt_path = filename.replace('.pkl', '.txt')
+        model.booster_.save_model(txt_path)
+    else:
+        print(f'Module path: {module_path}.')
+        raise ValueError("Unsupported library")
+
+
+
+def train_and_evaluate_model(model_name, model_params, X_train, y_train, labels, output_dir=os.path.join('models', 'vectorized')):
     """Train the model, evaluate it, and save the metrics."""
+    model  = instantiate_model(model_params)
     model.fit(X_train, y_train)
     
     # Predict and evaluate
@@ -54,9 +118,9 @@ def train_and_evaluate_model(model_params, X_train, y_train, labels):
     model_dir = os.path.join(output_dir, model_name)
     os.makedirs(model_dir, exist_ok=True)
     
-    with open(os.path.join(model_dir, 'classification_report.json'), 'w') as f:
-        json.dump(report, f, indent=4)
-    
+    report_path = os.path.join(model_dir, 'classification_report.json')
+    to_json(report, report_path)
+
     pd.DataFrame(matrix, index=labels, columns=labels).to_csv(os.path.join(model_dir, 'confusion_matrix.csv'))
     
     # Extract summary metrics for the DataFrame
@@ -126,13 +190,6 @@ if __name__ == "__main__":
     # Load model params from JSON
     vectorized_models = load_config('./configs/vectorized_models.json')
     print(vectorized_models.keys())
-
-    # Define your models
-    models = {
-        'model_1': model_1_instance,
-        'model_2': model_2_instance,
-        # Add more models as needed
-    }
 
     # Execute the main function
     main(data_path, labels_path, output_dir, models)
