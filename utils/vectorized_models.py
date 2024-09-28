@@ -8,23 +8,6 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import classification_report, confusion_matrix
 
-module_name = 'utils'
-
-try:
-    __import__(module_name)
-except ImportError:
-    # If the module cannot be imported, append the directory to sys.path
-    module_path = './../'
-    if module_path not in sys.path:
-        sys.path.append(module_path)
-    try:
-        __import__(module_name)
-        print(f"Successfully imported {module_name} after appending {module_path} to sys.path.")
-    except ImportError:
-        print(f"Failed to import {module_name} even after appending {module_path} to sys.path.")
-else:
-    print(f"{module_name} is already available.")
-
 from utils.helpers import (
     load_config,
     to_json,
@@ -101,7 +84,6 @@ def save_model(model, filename):
     else:
         print(f'Module path: {module_path}.')
         raise ValueError("Unsupported library")
-
 
 
 def train_and_evaluate_model(model_name, model_params, X_train, y_train, labels, output_dir=os.path.join('models', 'vectorized')):
