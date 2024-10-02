@@ -8,7 +8,7 @@ Computer vision project to classify facial expressions into one of 6 emotion typ
 - Surprise 
 - Neutral
 
-**Disgust** is a category in one dataset and is underrepresented there, therefore it will be dropped from analyses.
+**Disgust** is represented in only one dataset and is underrepresented there. Therefore, it is dropped from analyses.
 
 ## Sections
 - [Data Sources](#data-sources)
