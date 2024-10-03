@@ -13,14 +13,6 @@
         "5": "Surprise", 
         "6": "Neutral"
     },
-    "frd_emo_dict": {
-        "0": "Angry", 
-        "1": "Fear", 
-        "2": "Happy", 
-        "3": "Sad", 
-        "4": "Surprise", 
-        "5": "Neutral"
-    },
     "emo_color_dict": {
         "Angry": "red", 
         "Disgust": "olive", 
@@ -29,27 +21,5 @@
         "Sad": "blue", 
         "Surprise": "darkviolet",
         "Neutral": "slategray"
-    },
-    "output_col_order": [
-        "Emotion",
-        "TotalImages",
-        "Training",
-        "TrainingPerc",
-        "PublicTest",
-        "PublicTestPerc", 
-        "PrivateTest", 
-        "PrivateTestPerc"
-    ],
-    "frd_output_col_order": [
-        "Emotion",
-        "TotalImages",
-        "Training",
-        "TrainingPerc",
-        "Testing",
-        "TestingPerc"
-    ],
-    "img_directories": {
-        "fer2013": "data/fer2013",
-        "frd2020": "data/frd2020"
     }
 }
