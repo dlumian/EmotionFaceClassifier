@@ -44,6 +44,7 @@ def apply_standard_formatting(
 def plot_emotion_counts_plotly(
         df, 
         x='emotion', 
+        y='count',
         color='usage', 
         title='Emotion Counts Split by Usage (Train/Test)', 
         save_path=None, 
@@ -54,6 +55,7 @@ def plot_emotion_counts_plotly(
     fig = px.bar(
         df, 
         x=x, 
+        y=y,
         color=color, 
         barmode=barmode, 
         title=title,
