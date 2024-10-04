@@ -13,13 +13,44 @@
         "5": "Surprise", 
         "6": "Neutral"
     },
-    "emo_color_dict": {
-        "Angry": "red", 
-        "Disgust": "olive", 
-        "Fear": "black", 
-        "Happy": "gold", 
-        "Sad": "blue", 
-        "Surprise": "darkviolet",
-        "Neutral": "slategray"
+    "marker_styles":{
+        "Training": {
+            "color": {
+                "Angry": "red", 
+                "Disgust": "olive", 
+                "Fear": "black", 
+                "Happy": "gold", 
+                "Sad": "blue", 
+                "Surprise": "darkviolet",
+                "Neutral": "slategray"
+            },
+            "opacity": 1.0,
+            "line":{
+                "color": "black",
+                "width": 0.3
+            },
+            "pattern": {
+                "shape": ""
+            }
+        },
+        "Testing": {
+            "color": {
+                "Angry": "red", 
+                "Disgust": "olive", 
+                "Fear": "black", 
+                "Happy": "gold", 
+                "Sad": "blue", 
+                "Surprise": "darkviolet",
+                "Neutral": "slategray"
+            },
+            "opacity": 0.7,
+            "line":{
+                "color": "grey",
+                "width": 0.3
+            },
+            "pattern": {
+                "shape": "x"
+            }
+        }
     }
 }
