@@ -8,7 +8,11 @@ def plot_emotion_counts(
         color='usage', 
         title='Emotion Counts by Usage (Train/Test)', 
         save_path=None, 
-        stacked=False):
+        stacked=False,
+        style_dict=None,
+        legend_text=None,
+        text_auto=False
+    ):
     # Use 'stack' or 'group' for bar mode depending on the stacked argument
     barmode = 'stack' if stacked else 'group'
 
@@ -19,19 +23,27 @@ def plot_emotion_counts(
         color=color, 
         barmode=barmode, 
         title=title,
-        color_discrete_sequence=px.colors.qualitative.Plotly)
+        text_auto=text_auto
+    )
+    
+    # Update trace settings if style dict available
+    if style_dict:
+        fig = apply_trace_style(fig, style_dict)
 
-    fig = apply_plotly_formatting(fig, title=title, xlabel='Emotion', ylabel='Count')
+    # Update general formatting for consistency
+    fig = apply_formatting(fig, title=title, xlabel='Emotion', ylabel='Count')
 
-    # Update the layout to capitalize the legend title
-    fig.update_layout(legend_title_text=color.capitalize())
+    if legend_text:
+        fig = annotate_legend(fig, legend_text)
+    else:
+        # Update the layout to capitalize the legend title
+        fig.update_layout(legend_title_text=color.capitalize())
 
     # Save the plot if save_path is provided
     if save_path:
         fig.write_image(save_path)
 
-    # Display the plot
-    fig.show()
+    return fig
 
 def apply_formatting(fig, title, xlabel, ylabel):
     fig.update_layout(
@@ -50,67 +62,59 @@ def apply_formatting(fig, title, xlabel, ylabel):
     )
     return fig
 
+def apply_trace_style(fig, style_dict):
+    # Verify that the style_config is properly structured
+    if not isinstance(style_dict, dict):
+        raise ValueError("style_dict must be a dictionary")
 
-def apply_trace_style(style_dict):
-    pass
-
-
-
-
-
-
-
-
-
-
-# def apply_custom_styles(fig, style_config):
-#     # Verify that the style_config is properly structured
-#     if not isinstance(style_config, dict):
-#         raise ValueError("style_config must be a dictionary")
-
-#     for dataset_type in ['Train', 'Test']:
-#         # Check if dataset type exists in the config
-#         if dataset_type not in style_config:
-#             raise KeyError(f"Missing style configuration for dataset type: '{dataset_type}'")
-        
-#         # Validate opacity value
-#         opacity = style_config[dataset_type].get('opacity', 1.0)  # Default to full opacity if not set
-#         if not (isinstance(opacity, (int, float)) and 0 <= opacity <= 1):
-#             raise ValueError(f"Opacity for dataset type '{dataset_type}' must be a float between 0 and 1")
-
-#     # Apply styles to the figure
-#     for trace in fig.data:
-#         dataset_type = trace.name  # The name will be 'Train' or 'Test'
-        
-#         if dataset_type in style_config:
-#             # Extract colors for each emotion in trace.x
-#             colors = []
-#             for emotion in trace.x:
-#                 if emotion in style_config[dataset_type]['color']:
-#                     colors.append(style_config[dataset_type]['color'][emotion])
-#                 else:
-#                     raise KeyError(f"Missing color configuration for emotion: '{emotion}' in dataset type: '{dataset_type}'")
+    # Update traces using the style dictionary
+    for trace in fig.data:
+        dataset_type = trace.name  
+    
+        # Ensure that dataset_type exists in style_config
+        if dataset_type in style_dict:
+            # Extract the configuration for the dataset type
+            config = style_dict[dataset_type]
             
-#             # Set optional style elements with default values
-#             line_color = style_config[dataset_type].get('line', {}).get('color', 'black')  # Default to black
-#             line_width = style_config[dataset_type].get('line', {}).get('width', 1)       # Default to width 1
-#             pattern_shape = style_config[dataset_type].get('pattern', {}).get('shape', None)  # Default to None (no pattern)
-#             hoverinfo = style_config[dataset_type].get('hoverinfo', 'x+y')  # Default to show x and y values
-#             bar_width = style_config[dataset_type].get('width', None)       # Default to None (use Plotly default)
+            # Set color for each emotion dynamically
+            colors = []
+            for emotion in trace.x:
+                color = config.get('color', {}).get(emotion)
+                if color:
+                    colors.append(color)
+                else:
+                    colors.append('grey')  # Default color if not specified
+            
+            # Prepare marker settings dynamically
+            marker_settings = {
+                'color': colors,
+                'opacity': config.get('opacity', 1.0)
+            }
+            
+            # Add optional nested attributes like line and pattern if they exist in the config
+            if 'line' in config:
+                marker_settings['line'] = config['line']
+            
+            if 'pattern' in config:
+                marker_settings['pattern'] = config['pattern']
+            
+            # Update the trace with marker settings
+            trace.update(
+                marker=marker_settings,
+            )
+    return fig
 
-#             # Update the trace with custom colors and optional styles
-#             trace.update(
-#                 marker=dict(
-#                     color=colors,
-#                     opacity=opacity,
-#                     line=dict(
-#                         color=line_color,
-#                         width=line_width
-#                     ),
-#                     pattern=dict(
-#                         shape=pattern_shape
-#                     ) if pattern_shape else {}  # Only add pattern if it's defined
-#                 ),
-#                 hoverinfo=hoverinfo,
-#                 width=bar_width
-#             )
+def annotate_legend(fig, text):
+    # Hide the default legend
+    fig.update_layout(showlegend=False)
+
+    # Add custom note as an annotation
+    fig.add_annotation(
+        text=text,
+        x=0.98, y=-0.42,
+        xref='paper', yref='paper',
+        showarrow=False,
+        font=dict(size=12),
+        align="left"
+    )
+    return fig
