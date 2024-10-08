@@ -2,9 +2,10 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 from PIL import Image
 import numpy as np
+import cv2
+from sklearn.decomposition import PCA
 import mlflow
 import os
-
 
 def display_random_images_from_df(df, n_rows=3):
     """
@@ -60,143 +61,76 @@ def display_random_images_from_df(df, n_rows=3):
     plt.tight_layout()
     plt.show()
 
-
-def load_images_from_df(df):
+def preprocess_image(image, image_size=(64, 64), normalize=True):
     """
-    Load images from the file paths in the DataFrame and return them as numpy arrays.
-    
-    Parameters:
-    - df: pandas DataFrame containing 'File Path' and 'Category' columns.
-    
+    Preprocess a facial image: resize and normalize.
+    Args:
+        image: Input image (as a NumPy array).
+        image_size: Size to resize the image to.
+        normalize: Whether to normalize the pixel values.
     Returns:
-    - A dictionary where keys are categories and values are lists of images as numpy arrays.
+        Preprocessed image.
     """
-    category_images = {}
-    
-    # Iterate over each row in the DataFrame
-    for _, row in df.iterrows():
-        category = row['emotion']
-        file_path = row['img_path']
-        
-        # Load image, convert to grayscale, and convert to numpy array
-        img = Image.open(file_path).convert('L')
-        img_array = np.array(img)
-        
-        # Store in dictionary
-        if category not in category_images:
-            category_images[category] = []
-        category_images[category].append(img_array)
-    
-    return category_images
+    image_resized = cv2.resize(image, image_size)
+    image_gray = cv2.cvtColor(image_resized, cv2.COLOR_BGR2GRAY)
+    if normalize:
+        image_gray = image_gray / 255.0
+    return image_gray
 
-def compute_mean_image(images):
+# Utility function for dimensionality reduction using PCA
+def apply_pca(images, n_components=50):
     """
-    Compute the mean image from a list of images.
-    
-    Parameters:
-    - images: List of images as numpy arrays.
-    
+    Apply PCA to reduce dimensionality of a list of images.
+    Args:
+        images: List of preprocessed images (as 2D arrays).
+        n_components: Number of principal components to keep.
     Returns:
-    - The mean image as a numpy array.
+        Transformed images in the reduced dimensional space.
     """
-    return np.mean(images, axis=0)
+    flat_images = [img.flatten() for img in images]
+    pca = PCA(n_components=n_components)
+    transformed_images = pca.fit_transform(flat_images)
+    return transformed_images, pca
 
-def compute_median_image(images):
+# Utility function to compute the average face for a category of images
+def compute_average_face(images):
     """
-    Compute the median image from a list of images.
-    
-    Parameters:
-    - images: List of images as numpy arrays.
-    
+    Compute the average face for a list of images.
+    Args:
+        images: List of preprocessed images (as 2D arrays).
     Returns:
-    - The median image as a numpy array.
+        The average face (as a 2D array).
     """
-    return np.median(images, axis=0)
+    average_face = np.mean(images, axis=0)
+    return average_face
 
-def plot_image(image, title="Average Image", cmap='gray'):
+# Utility function to track and log the PCA results and average face in MLflow
+def log_pca_results(pca, average_face, emotion_category):
     """
-    Plot a single image with a title.
-    
-    Parameters:
-    - image: The image to plot as a numpy array.
-    - title: Title for the image plot.
-    - cmap: Colormap for the image plot (default is grayscale).
+    Log PCA results and average face in MLflow for tracking.
+    Args:
+        pca: The fitted PCA model.
+        average_face: The computed average face.
+        emotion_category: The category of emotion (for logging purposes).
     """
-    plt.imshow(image, cmap=cmap)
-    plt.title(title)
-    plt.axis('off')
-    plt.show()
+    pca_array_dir = os.path.join('data', 'pca_arrays')
+    os.makedirs(pca_array_dir, exist_ok=True)
 
-def save_image(image, path):
-    """
-    Save an image to the specified path.
-    
-    Parameters:
-    - image: The image to save as a numpy array.
-    - path: The file path to save the image to.
-    """
-    img = Image.fromarray(np.uint8(image))
-    img.save(path)
+    facial_imgs = os.path.join('imgs', 'facial_features')
+    os.makedirs(facial_imgs, exist_ok=True)
 
-def log_and_save_image(image, category, variation, output_dir):
-    """
-    Log an image and save it locally and to MLflow.
-    
-    Parameters:
-    - image: The image to log and save.
-    - category: The category (emotion) name.
-    - variation: The variation of the average image process.
-    - output_dir: Directory to save the image locally.
-    """
-    # Save the image locally
-    file_path = os.path.join(output_dir, f"{category}_{variation}.png")
-    save_image(image, file_path)
-    
-    # Log the image in MLflow
-    mlflow.log_artifact(file_path)
-    
-    return file_path
-
-def process_mean_images(df, output_dir="outputs"):
-    """
-    Process the mean images for each category and log results with MLflow.
-    
-    Parameters:
-    - df: pandas DataFrame with 'Category', 'File Path', and 'Color' columns.
-    - output_dir: Directory to save the images locally.
-    """
-    # Start an MLflow run
-    with mlflow.start_run(run_name="Mean Image Processing"):
-        # Load images by category
-        category_images = load_images_from_df(df)
+    with mlflow.start_run(run_name=f"PCA_{emotion_category}"):
+        mlflow.log_param("n_components", pca.n_components_)
+        mlflow.log_metric("explained_variance_ratio", np.sum(pca.explained_variance_ratio_))
         
-        # Process mean images
-        for category, images in category_images.items():
-            mean_image = compute_mean_image(images)
-            mlflow.log_param(f"{category}_method", "mean")
-            
-            # Save and log the image
-            file_path = log_and_save_image(mean_image, category, "mean", output_dir)
-            print(f"Saved and logged mean image for {category}: {file_path}")
+        # Save and log the average face
+        average_face_path = os.path.join(facial_imgs, f"average_face_{emotion_category}.png")
+        plt.imsave(average_face_path, average_face, cmap='gray')
+        mlflow.log_artifact(average_face_path)
 
-def process_median_images(df, output_dir="outputs"):
-    """
-    Process the median images for each category and log results with MLflow.
-    
-    Parameters:
-    - df: pandas DataFrame with 'Category', 'File Path', and 'Color' columns.
-    - output_dir: Directory to save the images locally.
-    """
-    with mlflow.start_run(run_name="Median Image Processing"):
-        # Load images by category
-        category_images = load_images_from_df(df)
-        
-        # Process median images
-        for category, images in category_images.items():
-            median_image = compute_median_image(images)
-            mlflow.log_param(f"{category}_method", "median")
-            
-            # Save and log the image
-            file_path = log_and_save_image(median_image, category, "median", output_dir)
-            print(f"Saved and logged median image for {category}: {file_path}")
+        # Save PCA components and log
+        components_path = os.path.join(pca_array_dir, f"pca_components_{emotion_category}.npy")
+        np.save(components_path, pca.components_)
+        mlflow.log_artifact(components_path)
 
+        print(f"Logged PCA results for emotion category: {emotion_category}")
