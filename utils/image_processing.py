@@ -1,13 +1,143 @@
+import os
+import numpy as np
+import mlflow
+import mlflow.sklearn
+from sklearn.decomposition import PCA, NMF
+from sklearn.preprocessing import StandardScaler
+from PIL import Image
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
-from PIL import Image
-import numpy as np
-import cv2
-from sklearn.decomposition import PCA
-import mlflow
-import os
 
-def display_random_images_from_df(df, n_rows=3):
+# MLflow Experiment Tracking
+mlflow.set_experiment("Image_Emotion_Analysis")
+
+# Data Loading and Preprocessing
+def load_images(df):
+    """Load images from file paths and convert to 48x48 grayscale."""
+    images = []
+    for file_path in df['img_path']:
+        img = Image.open(file_path).convert('L')  # 'L' mode ensures grayscale
+        img = img.resize((48, 48))
+        images.append(np.array(img).flatten())  # Flatten for PCA/NMF
+    return np.array(images)
+
+def preprocess_images(df, usage='Training'):
+    """Filter and load images based on 'Training' or 'Testing' usage."""
+    subset = df[df['usage'] == usage]
+    X = load_images(subset)
+    y = subset['emotion']
+    return X, y
+
+# PCA and NMF
+def apply_pca(X, n_components=100):
+    """Apply PCA to the dataset."""
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+    pca = PCA(n_components=n_components)
+    X_pca = pca.fit_transform(X_scaled)
+    X_reconstructed = pca.inverse_transform(X_pca)
+    return X_pca, X_reconstructed, pca.explained_variance_ratio_.sum()
+
+def apply_nmf(X, n_components=100):
+    """Apply NMF to the dataset."""
+    nmf = NMF(n_components=n_components, init='random', random_state=0)
+    X_nmf = nmf.fit_transform(X)
+    X_reconstructed = np.dot(X_nmf, nmf.components_)
+    reconstruction_error = np.linalg.norm(X - X_reconstructed)
+    return X_nmf, X_reconstructed, reconstruction_error
+
+# MLflow Tracking
+def track_with_mlflow(X, method='PCA', n_components_list=[50, 100, 150]):
+    """Track analysis results using MLflow for multiple n_components values."""
+    for n_components in n_components_list:
+        with mlflow.start_run(run_name=f"{method}_n_components_{n_components}"):
+            if method == 'PCA':
+                _, X_reconstructed, variance_explained = apply_pca(X, n_components)
+                mlflow.log_metric('variance_explained', variance_explained)
+            elif method == 'NMF':
+                _, X_reconstructed, reconstruction_error = apply_nmf(X, n_components)
+                mlflow.log_metric('reconstruction_error', reconstruction_error)
+            
+            # Save reconstructed images as artifacts
+            save_path = f"imgs/{method.lower()}_n_{n_components}"
+            os.makedirs(save_path, exist_ok=True)
+            for i in range(8):  # Save first 8 examples
+                img = X_reconstructed[i].reshape(48, 48).astype(np.uint8)
+                img_path = os.path.join(save_path, f"{method}_n_{n_components}_example_{i}.png")
+                Image.fromarray(img).save(img_path)
+                mlflow.log_artifact(img_path)
+
+def compute_average_face(X, labels):
+    """
+    Compute average faces for each emotion category, and prepend the combined average face for all images.
+    
+    Args:
+        X: Array of images.
+        labels: Array of corresponding emotion labels.
+    
+    Returns:
+        avg_faces: List of average face arrays, with the combined face at the start.
+        emotion_labels: List of emotion labels, with 'Combined' at the start.
+    """
+    unique_labels = np.unique(labels)
+    avg_faces = []
+    
+    # Compute the average face for each emotion category
+    for label in unique_labels:
+        label_mask = labels == label
+        avg_face = np.mean(X[label_mask], axis=0)
+        avg_faces.append(avg_face)
+    
+    # Compute combined average face for the whole dataset
+    combined_face = np.mean(X, axis=0)
+    
+    # Prepend the combined face and 'Combined' label to the lists
+    avg_faces.insert(0, combined_face)  # Add combined face at the start
+    emotion_labels = ['Combined'] + list(unique_labels)  # Add 'Combined' label at the start
+    
+    return avg_faces, emotion_labels
+
+def save_and_plot_images(image_list, labels, save_path, title="Images", label_colors=None, use_colors=False):
+    """
+    Save and plot images in a comparison grid, and save each image individually.
+    
+    Args:
+        image_list: List of image arrays to display and save.
+        labels: List of labels corresponding to the images.
+        save_path: Path to save images and the comparison plot.
+        title: Title for the entire plot.
+        label_colors: Optional list of colors for the labels (same length as labels).
+        use_colors: Whether to color-code the titles based on the label_colors list.
+    """
+    n_images = len(image_list)
+    
+    # Create subplots and add a larger main title
+    fig, axes = plt.subplots(1, n_images, figsize=(n_images * 3, 3))
+    fig.suptitle(title, fontsize=28)  # Larger font size for the main title
+    
+    # Plot and save each image individually
+    for i, (image, label) in enumerate(zip(image_list, labels)):
+        ax = axes[i]
+        ax.imshow(image.reshape(48, 48), cmap='gray')
+        
+        # Use color for the title if specified, otherwise default to black
+        title_color = label_colors[i] if use_colors and label_colors is not None else 'black'
+        ax.set_title(label, fontsize=20, color=title_color)  # Increased font size for column titles
+        ax.axis('off')
+        
+        # Save individual image
+        img = Image.fromarray(image.reshape(48, 48).astype(np.uint8), 'L')
+        img_path = os.path.join(save_path, f'{label.lower().replace(" ", "_")}.png')
+        img.save(img_path)
+    
+    # Save the comparison plot
+    os.makedirs(save_path, exist_ok=True)
+    comparison_path = os.path.join(save_path, 'comparison_plot.png')
+    plt.tight_layout()
+    plt.savefig(comparison_path, dpi=300, bbox_inches='tight')
+    plt.show()
+
+def display_sample_images(df, n_rows=3, save_path=None):
     """
     Display randomly sampled images from each category in the DataFrame with colored outlines.
     
@@ -51,86 +181,15 @@ def display_random_images_from_df(df, n_rows=3):
             
             # Add colored outline using the color from the DataFrame
             rect = Rectangle((0, 0), img.size[0] - 1, img.size[1] - 1, 
-                             linewidth=4, edgecolor=img_color, facecolor='none')
+                             linewidth=6, edgecolor=img_color, facecolor='none')
             ax.add_patch(rect)
             
             # Set the title with emphasis (larger font size and bold) for the first row of each column
             if row == 0:
                 ax.set_title(category, fontsize=24, fontweight='bold', pad=10, color=img_color)
     
+    if save_path:
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+
     plt.tight_layout()
     plt.show()
-
-def preprocess_image(image, image_size=(64, 64), normalize=True):
-    """
-    Preprocess a facial image: resize and normalize.
-    Args:
-        image: Input image (as a NumPy array).
-        image_size: Size to resize the image to.
-        normalize: Whether to normalize the pixel values.
-    Returns:
-        Preprocessed image.
-    """
-    image_resized = cv2.resize(image, image_size)
-    image_gray = cv2.cvtColor(image_resized, cv2.COLOR_BGR2GRAY)
-    if normalize:
-        image_gray = image_gray / 255.0
-    return image_gray
-
-# Utility function for dimensionality reduction using PCA
-def apply_pca(images, n_components=50):
-    """
-    Apply PCA to reduce dimensionality of a list of images.
-    Args:
-        images: List of preprocessed images (as 2D arrays).
-        n_components: Number of principal components to keep.
-    Returns:
-        Transformed images in the reduced dimensional space.
-    """
-    flat_images = [img.flatten() for img in images]
-    pca = PCA(n_components=n_components)
-    transformed_images = pca.fit_transform(flat_images)
-    return transformed_images, pca
-
-# Utility function to compute the average face for a category of images
-def compute_average_face(images):
-    """
-    Compute the average face for a list of images.
-    Args:
-        images: List of preprocessed images (as 2D arrays).
-    Returns:
-        The average face (as a 2D array).
-    """
-    average_face = np.mean(images, axis=0)
-    return average_face
-
-# Utility function to track and log the PCA results and average face in MLflow
-def log_pca_results(pca, average_face, emotion_category):
-    """
-    Log PCA results and average face in MLflow for tracking.
-    Args:
-        pca: The fitted PCA model.
-        average_face: The computed average face.
-        emotion_category: The category of emotion (for logging purposes).
-    """
-    pca_array_dir = os.path.join('data', 'pca_arrays')
-    os.makedirs(pca_array_dir, exist_ok=True)
-
-    facial_imgs = os.path.join('imgs', 'facial_features')
-    os.makedirs(facial_imgs, exist_ok=True)
-
-    with mlflow.start_run(run_name=f"PCA_{emotion_category}"):
-        mlflow.log_param("n_components", pca.n_components_)
-        mlflow.log_metric("explained_variance_ratio", np.sum(pca.explained_variance_ratio_))
-        
-        # Save and log the average face
-        average_face_path = os.path.join(facial_imgs, f"average_face_{emotion_category}.png")
-        plt.imsave(average_face_path, average_face, cmap='gray')
-        mlflow.log_artifact(average_face_path)
-
-        # Save PCA components and log
-        components_path = os.path.join(pca_array_dir, f"pca_components_{emotion_category}.npy")
-        np.save(components_path, pca.components_)
-        mlflow.log_artifact(components_path)
-
-        print(f"Logged PCA results for emotion category: {emotion_category}")
