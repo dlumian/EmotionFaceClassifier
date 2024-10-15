@@ -2,84 +2,8 @@ import os
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from PIL import Image
+from matplotlib.patches import Rectangle
 import numpy as np
-
-def plot_facial_expressions(
-        image_dict, 
-        row_labels=None, 
-        label_colors=None, 
-        save_path=None,
-        file_name=None 
-    ):
-    """
-    Plot facial expression images in subplots. Supports coloring borders by category, row labels, and saving to disk.
-    
-    Parameters:
-    - image_dict (dict): A dictionary where the keys are categories and values are lists of image file paths or arrays.
-    - row_labels (list): Optional list of row labels, must match the number of rows in the dataset.
-    - label_colors (dict): Optional dictionary to color-code borders of the images by category.
-    - save_path (str): Optional path to save the resulting figure. If not provided, the plot is just shown.
-    - columns (int): Number of columns in the subplot (including row labels if present).
-    
-    Returns:
-    - fig (matplotlib.figure.Figure): The figure object for further modifications.
-    """
-    # Validate inputs
-    if row_labels and len(row_labels) != len(next(iter(image_dict.values()))):
-        raise ValueError("Row labels must match the number of rows in the image dataset.")
-    
-    # Check if image_dict contains paths or arrays and read image files if necessary
-    for category, images in image_dict.items():
-        for i, img in enumerate(images):
-            if isinstance(img, str):  # Image is a file path, load it
-                image_dict[category][i] = np.array(Image.open(img))
-    
-    # Determine the number of rows and columns
-    num_categories = len(image_dict)
-    num_images_per_category = len(next(iter(image_dict.values())))  # All categories should have same number of images
-    
-    if row_labels:
-        # columns = min(columns, num_categories + 1)  # Include an extra column for row labels
-        columns = num_categories + 1
-    else:
-        columns = num_categories
-    
-    # Create the subplot grid
-    fig, axes = plt.subplots(num_images_per_category, columns, figsize=(columns * 3, num_images_per_category * 3))
-    
-    # Plot each image in the correct spot
-    for row in range(num_images_per_category):
-        if row_labels:  # Add row labels to the first column
-            axes[row, 0].text(0.5, 0.5, row_labels[row], va='center', ha='center')
-            axes[row, 0].axis('off')
-        
-        for col, (category, images) in enumerate(image_dict.items()):
-            # Adjust column index if row_labels are used
-            image_col = col + 1 if row_labels else col
-            
-            # Show the image
-            axes[row, image_col].imshow(images[row])
-            axes[row, image_col].axis('off')
-            
-            # Add a colored border if label_colors are provided
-            if label_colors and category in label_colors:
-                color = label_colors[category]
-                rect = patches.Rectangle((0, 0), images[row].shape[1], images[row].shape[0], 
-                                         linewidth=5, edgecolor=color, facecolor='none')
-                axes[row, image_col].add_patch(rect)
-    
-    # Adjust subplot spacing
-    plt.tight_layout()
-    
-    # Save the plot to disk if a path is provided
-    if save_path:
-        os.makedirs(save_path, exist_ok=True)
-        save_file = os.path.join(save_path, 'facial_expressions.png')
-        fig.savefig(save_file)
-        print(f"Plot saved to {save_file}")
-    
-    # Return the figure object for further modification
-    return fig
 
 def generate_sample_images(df, n=3, cat_col='emotion', path_col='img_path'):
     # Ensure the number of rows is within the allowed range
@@ -92,5 +16,89 @@ def generate_sample_images(df, n=3, cat_col='emotion', path_col='img_path'):
     random_samples = {}
     for category in categories:
         category_df = df[df[cat_col] == category]
-        random_samples[category] = df[path_col].sample(n=n).tolist()
+        random_samples[category] = category_df[path_col].sample(n=n).tolist()
     return random_samples
+
+
+def plot_facial_expressions(
+        image_dict, 
+        row_labels=None, 
+        label_colors=None, 
+        save_path='imgs/test_examples',
+        file_name='sample_images.png'
+    ):
+    # Default save path if not provided
+    base_save_path = save_path if save_path else '../imgs/'
+        # Ensure the base path exists
+    os.makedirs(base_save_path, exist_ok=True)
+    
+    # Check if image_dict contains paths or arrays and read image files if necessary
+    for category, images in image_dict.items():
+        for i, img in enumerate(images):
+            if isinstance(img, str):  # Image is a file path, load it
+                image_dict[category][i] = np.array(Image.open(img).convert('L'))  # Convert to grayscale
+
+    # Determine the number of rows based on the largest category
+    max_images_per_category = max(len(images) for images in image_dict.values())
+        
+    # Validate row_labels if provided
+    if row_labels:
+        if len(row_labels) != max_images_per_category:
+            raise ValueError(f"Row labels must match the number of rows in the dataset: {max_images_per_category} expected.")
+    
+    # Adjust columns if row_labels are provided
+    num_categories = len(image_dict)
+    if row_labels:
+        columns = num_categories + 1  # Include an extra column for row labels
+    else:
+        columns = num_categories
+
+    # Create the subplot grid
+    fig, axes = plt.subplots(max_images_per_category, columns, figsize=(columns * 3, max_images_per_category * 3))
+    
+    # Plot each image in the correct spot and save individual images
+    for row in range(max_images_per_category):
+        if row_labels:  # Add row labels to the first column
+            if row < len(row_labels):
+                axes[row, 0].text(0.5, 0.5, row_labels[row], fontsize=24, va='center', ha='center')
+            axes[row, 0].axis('off')
+        
+        for col, (category, images) in enumerate(image_dict.items()):
+            # Adjust column index if row_labels are used
+            image_col = col + 1 if row_labels else col
+            
+            # Check if the current category has an image for this row
+            if row < len(images):
+                img = images[row]
+                axes[row, image_col].imshow(img, cmap='gray')  # Display image in grayscale
+                axes[row, image_col].axis('off')
+                
+                # Add a colored border if label_colors are provided
+                if label_colors and category in label_colors:
+                    color = label_colors[category]
+                else:
+                    color = 'black'
+                rect = Rectangle((0, 0), img.shape[1] - 1, img.shape[0] - 1, 
+                             linewidth=6, edgecolor=color, facecolor='none')
+                axes[row, image_col].add_patch(rect)
+
+                # Set the title with emphasis (larger font size and bold) for the first row of each column
+                if row == 0:
+                    axes[row, image_col].set_title(category, fontsize=24, fontweight='bold', pad=10, color=color)
+        
+            else:
+                axes[row, image_col].axis('off')  # No image for this row in this category
+    
+    # Adjust subplot spacing
+    plt.tight_layout()
+    
+    # Save the subplot comparison image
+    if save_path:
+        comparison_image_path = os.path.join(save_path, file_name or 'facial_expressions.png')
+        fig.savefig(comparison_image_path)
+        print(f"Comparison subplot saved to {comparison_image_path}")
+
+    # Close the figure to prevent it from being displayed twice
+    plt.close(fig)    
+    # Return the figure object for further modification
+    return fig
