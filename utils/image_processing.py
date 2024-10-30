@@ -177,15 +177,23 @@ def plot_face_matrix(
                     color = group_colors[col_label]
                 else:
                     color = 'black'
-                rect = Rectangle((0, 0), image.shape[1] - 1, image.shape[0] - 1, 
-                                linewidth=6, edgecolor=color, facecolor='none',
-                                zorder=0)
 
-                ax.add_patch(rect)
+                for spine in ax.spines.values():
+                    spine.set_linewidth(7)
+                    spine.set_edgecolor(color)
+
+                # rect = Rectangle((0, 0), image.shape[1] - 1, image.shape[0] - 1, 
+                #                 linewidth=6, edgecolor=color, facecolor='none',
+                #                 zorder=0)
+
+                # ax.add_patch(rect)
+
                 # Set the title with emphasis (larger font size and bold) for the first row of each column
                 if row_idx == 0:
                     ax.set_title(col_label, fontsize=24, fontweight='bold', pad=10, color=color)
-            ax.axis('off')  # Hide axis ticks
+            # ax.axis('off')  # Hide axis ticks
+            ax.set_xticks([])
+            ax.set_yticks([])
 
     # Save the plot if a save_path is given
     if save_path:
@@ -327,27 +335,33 @@ def generate_pixel_intensities(X, y, color_dict=None, save_path=None):
             color = color_dict[key]
         else:
             color = 'black'
-        # rect = Rectangle((0, 0), 1, 1, 
-        #     transform=axes[idx].transAxes,  # Use axes coordinates
-        #     color=color, 
-        #     linewidth=6,
-        #     fill=False,  # Only an outline, no fill
-        #     zorder=0
-        # )
-
-        # axes[idx].add_patch(rect)
 
         # Plot the histogram
-        axes[idx].hist(values, bins=64, range=(0, 256), color='gray', alpha=0.7, density=True)
+        axes[idx].hist(values, bins=64, range=(0, 256), color=color, alpha=0.7, density=True)
         # ax.set_title(f"{category} - Histogram")
-        axes[idx].set_xlabel(key)
-        for spine in axes[idx].spines.values():
-            spine.set_linewidth(5)
-            spine.set_edgecolor(color)
+        # axes[idx].set_xlabel(key)
+        axes[idx].set_title(key, fontsize=24, fontweight='bold', pad=10, color=color)
+
+        axes[idx].spines['left'].set_linewidth(8)
+        axes[idx].spines['left'].set_edgecolor(color)
+
+        axes[idx].spines['bottom'].set_linewidth(8)
+        axes[idx].spines['bottom'].set_edgecolor(color)
+
+        # for spine in axes[idx].spines.values():
+        #     spine.set_linewidth(8)
+        #     spine.set_edgecolor(color)
+
+        # Remove the top and right spines
+        axes[idx].spines['top'].set_visible(False)
+        axes[idx].spines['right'].set_visible(False)
 
     # Set shared y-axis label
-    axes[0].set_ylabel("Pixel Density")
-    fig.suptitle("Histogram of Pixel Intensity Density", fontsize=26, fontweight='bold')
+    axes[0].set_ylim(0, 0.007)
+    axes[0].set_yticks([0.001, 0.003, 0.005, 0.007])
+    axes[0].set_yticklabels([f"{y * 100:.1f}%" for y in axes[0].get_yticks()])
+    axes[0].set_ylabel("Pixel Density (%)")
+    fig.suptitle("Pixel Intensity Density Plot", fontsize=26, fontweight='bold')
 
     if save_path:
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
