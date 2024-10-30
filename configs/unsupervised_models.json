@@ -1,0 +1,33 @@
+{
+    "FastICA": {
+        "module": "sklearn.decomposition",
+        "class": "FastICA",
+        "params": {
+            "n_components": 30,
+            "max_iter": 500,
+            "tol": 0.0001,
+            "random_state": 42
+        }
+    },
+    "NMF": {
+        "module": "sklearn.decomposition",
+        "class": "NMF",
+        "params": {
+            "n_components": 50,
+            "init": "nndsvda",
+            "max_iter": 500,
+            "tol": 0.0001,
+            "random_state": 42
+        }
+    },
+    "PCA": {
+        "module": "sklearn.decomposition",
+        "class": "PCA",
+        "params": {
+            "n_components": 100,
+            "whiten": true,
+            "svd_solver": "auto",
+            "random_state": 42
+        }
+    }
+}

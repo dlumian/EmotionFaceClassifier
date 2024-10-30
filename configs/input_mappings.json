@@ -13,6 +13,16 @@
         "5": "Surprise", 
         "6": "Neutral"
     },
+    "category_order": [
+        "Overall",
+        "Angry", 
+        "Disgust", 
+        "Fear", 
+        "Happy", 
+        "Sad", 
+        "Surprise", 
+        "Neutral"
+    ],
     "plotly_styles":{
         "Training": {
             "color": {

@@ -4,9 +4,9 @@ import mlflow.sklearn
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
-from matplotlib.patches import Rectangle
-from sklearn.decomposition import PCA, NMF, FastICA, FactorAnalysis
+from sklearn.decomposition import PCA, NMF, FastICA
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from .analysis_tools import instantiate_model
 
 # MLflow Experiment Tracking
 mlflow.set_experiment("Image_Emotion_Analysis")
@@ -182,12 +182,6 @@ def plot_face_matrix(
                     spine.set_linewidth(7)
                     spine.set_edgecolor(color)
 
-                # rect = Rectangle((0, 0), image.shape[1] - 1, image.shape[0] - 1, 
-                #                 linewidth=6, edgecolor=color, facecolor='none',
-                #                 zorder=0)
-
-                # ax.add_patch(rect)
-
                 # Set the title with emphasis (larger font size and bold) for the first row of each column
                 if row_idx == 0:
                     ax.set_title(col_label, fontsize=24, fontweight='bold', pad=10, color=color)
@@ -204,8 +198,10 @@ def plot_face_matrix(
     plt.tight_layout()
     plt.show()
 
-def run_dimensionality_reduction(X, y, max_components, components_list, method='pca', normalize='none'):
-    # Step 1: Normalize data if needed
+def run_dimensionality_reduction(X, y, components_list, model_dict, normalize='none'):
+    results = {}
+    unique_categories = ['Overall'] + list(np.unique(y))
+
     if normalize == 'standard':
         scaler = StandardScaler()
         X = scaler.fit_transform(X)
@@ -213,107 +209,36 @@ def run_dimensionality_reduction(X, y, max_components, components_list, method='
         scaler = MinMaxScaler()
         X = scaler.fit_transform(X)
 
-    # Step 2: Initialize the results dictionary
-    results = {}
-
-    # Step 3: Define the mapping for the dimensionality reduction methods
-    method_mapping = {
-        'pca': PCA,
-        'nmf': NMF,
-        'fa': FactorAnalysis,
-        'ica': FastICA
-    }
-
-    # Validate the method choice
-    if method not in method_mapping:
-        raise ValueError(f"Unsupported dimensionality reduction method: {method}")
-
-    # Step 4: Apply dimensionality reduction on the overall dataset
-    try:
-        # Instantiate the reducer with max_components
-        if method in ['fa', 'ica']:
-            reducer = method_mapping[method](n_components=max_components, random_state=42, max_iter=500)
+    for cat in unique_categories:
+        model = instantiate_model(model_dict)
+        if cat == 'Overall':
+            X_set = X.copy()
         else:
-            reducer = method_mapping[method](n_components=max_components)
-
-        # Fit the reducer to the overall data
-        reducer.fit(X)
-
-        # List to store the average reconstructed images for different components
-        overall_reconstructed = []
-
-        # Reconstruct the data using the specified components in components_list
-        for n_components in components_list:
-            if n_components > max_components:
-                continue  # Skip if n_components exceeds max_components
-
-            # Reconfigure the reducer for n_components and fit again
-            if method in ['pca', 'fa']:
-                reducer_n = method_mapping[method](n_components=n_components)
-                reducer_n.fit(X)
-                X_reconstructed = reducer_n.inverse_transform(reducer_n.transform(X))
-            else:
-                reducer_n = method_mapping[method](n_components=n_components, random_state=42, max_iter=1000)
-                reducer_n.fit(X)
-                X_reconstructed = np.dot(reducer_n.transform(X), reducer_n.components_)
-
-            # Compute the average reconstructed image
-            avg_image = np.mean(X_reconstructed, axis=0)
-
-            # Optionally reshape to 48x48 if desired
-            avg_image_reshaped = avg_image.reshape(48, 48)
-
-            # Append the average image to the list
-            overall_reconstructed.append(avg_image_reshaped)
-
-        # Store the results for the overall dataset
-        results['Overall'] = overall_reconstructed
-
-    except Exception as e:
-        print(f"An error occurred during the overall analysis with method '{method}': {e}")
-
-    # Step 5: Apply dimensionality reduction for each emotion category
-    unique_emotions = np.unique(y)
-    for emotion in unique_emotions:
-        # Filter X for the current emotion category
-        X_emotion = X[y == emotion]
-
-        # List to store the average reconstructed images for current emotion
+            X_set = X[y == cat]
+        X_transformed = model.fit_transform(X_set)
         reconstructed_images = []
-
-        # Apply dimensionality reduction using the specified method
-        try:
-            for n_components in components_list:
-                if n_components > max_components:
-                    continue  # Skip if n_components exceeds max_components
-
-                # Reconfigure the reducer for n_components
-                if method in ['pca', 'fa']:
-                    reducer_n = method_mapping[method](n_components=n_components)
-                    reducer_n.fit(X_emotion)
-                    X_reconstructed = reducer_n.inverse_transform(reducer_n.transform(X_emotion))
+        reconstructed_comps = []
+        for component in components_list:
+            if component <= model.n_components:
+                reconstructed_comps.append(component)
+                reduced_data = X_transformed[:, :component]
+                print(f'# comps: {component}')
+                print(f'reduced shape: {reduced_data.shape}')
+                if hasattr(model, 'inverse_transform'):
+                    reconstructed = model.inverse_transform(np.pad(reduced_data, ((0, 0), (0, model.n_components - component))))
                 else:
-                    reducer_n = method_mapping[method](n_components=n_components, random_state=42, max_iter=500)
-                    reducer_n.fit(X_emotion)
-                    X_reconstructed = np.dot(reducer_n.transform(X_emotion), reducer_n.components_)
+                    reconstructed = np.dot(reduced_data, model.components_[:component])
+                print(f'reconstructed shape: {reconstructed.shape}')
+                averaged_image = reconstructed.mean(axis=0)
+                reconstructed_images.append(averaged_image.reshape((48, 48)))
+                print(f'end iteration for: {cat}, {component}')
+                print(f'Length of reconstructed images is: {len(reconstructed_images)}')
+            else:
+                print(f'Component larger than used was passed: {component}.')
+                print(f'This iteration will be skipped.')
 
-                # Compute the average reconstructed image
-                avg_image = np.mean(X_reconstructed, axis=0)
-
-                # Optionally reshape to 48x48 if desired
-                avg_image_reshaped = avg_image.reshape(48, 48)
-
-                # Append the average image to the list
-                reconstructed_images.append(avg_image_reshaped)
-
-            # Store the average reconstructed images for the current emotion
-            results[emotion] = reconstructed_images
-
-        except Exception as e:
-            print(f"An error occurred for emotion '{emotion}' with method '{method}': {e}")
-
-    # Step 6: Return the results dictionary, components_list, and max_components
-    return results, components_list, max_components
+        results[cat]=reconstructed_images
+    return results, reconstructed_comps
 
 def generate_pixel_intensities(X, y, color_dict=None, save_path=None):
     pixel_dict = {}
@@ -328,6 +253,12 @@ def generate_pixel_intensities(X, y, color_dict=None, save_path=None):
 
     num_columns = len(pixel_dict)
     fig, axes = plt.subplots(1, num_columns, figsize=(num_columns * 4, 5), sharey=True)
+    fig.suptitle("Pixel Intensity Density Plot", fontsize=26, fontweight='bold')
+
+    # Custom x-ticks and font size for readability
+    x_ticks = [0, 128, 255]
+    tick_fontsize = 12 
+
 
     # Plot each column
     for idx, (key, values) in enumerate(pixel_dict.items()):
@@ -342,15 +273,16 @@ def generate_pixel_intensities(X, y, color_dict=None, save_path=None):
         # axes[idx].set_xlabel(key)
         axes[idx].set_title(key, fontsize=24, fontweight='bold', pad=10, color=color)
 
+        # Customize x-axis ticks to only have 0, 128, and 255
+        axes[idx].set_xticks(x_ticks)
+        # Set the font size for x and y ticks
+        axes[idx].tick_params(axis='x', labelsize=tick_fontsize)
+
         axes[idx].spines['left'].set_linewidth(8)
         axes[idx].spines['left'].set_edgecolor(color)
 
         axes[idx].spines['bottom'].set_linewidth(8)
         axes[idx].spines['bottom'].set_edgecolor(color)
-
-        # for spine in axes[idx].spines.values():
-        #     spine.set_linewidth(8)
-        #     spine.set_edgecolor(color)
 
         # Remove the top and right spines
         axes[idx].spines['top'].set_visible(False)
@@ -361,7 +293,7 @@ def generate_pixel_intensities(X, y, color_dict=None, save_path=None):
     axes[0].set_yticks([0.001, 0.003, 0.005, 0.007])
     axes[0].set_yticklabels([f"{y * 100:.1f}%" for y in axes[0].get_yticks()])
     axes[0].set_ylabel("Pixel Density (%)")
-    fig.suptitle("Pixel Intensity Density Plot", fontsize=26, fontweight='bold')
+    axes[0].tick_params(axis='y', labelsize=tick_fontsize)
 
     if save_path:
         os.makedirs(os.path.dirname(save_path), exist_ok=True)

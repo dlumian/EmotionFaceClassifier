@@ -16,7 +16,8 @@ def plot_emotion_counts(
         stacked=False,
         style_dict=None,
         legend_text=None,
-        text_auto=False
+        text_auto=False,
+        category_order=None
     ):
     # Use 'stack' or 'group' for bar mode depending on the stacked argument
     barmode = 'stack' if stacked else 'group'
@@ -31,6 +32,9 @@ def plot_emotion_counts(
         text_auto=text_auto
     )
     
+    if category_order:
+        fig.update_xaxes(categoryorder='array', categoryarray=category_order)
+
     # Update trace settings if style dict available
     if style_dict:
         fig = apply_trace_style(fig, style_dict)
@@ -229,7 +233,7 @@ def plot_emotion_waffle(
     # Close the figure to free memory
     plt.close(fig)
 
-def plot_emotion_heatmap(df, group_col, split_col, value_col, save_path=None):
+def plot_emotion_heatmap(df, group_col, split_col, value_col, save_path=None, category_order=None):
     heatmap_data = df.pivot(index=group_col, columns=split_col, values=value_col)
     new_order = ['Training', 'Testing']
     hm_reordered = heatmap_data[new_order]
@@ -245,6 +249,9 @@ def plot_emotion_heatmap(df, group_col, split_col, value_col, save_path=None):
         zmin=0,
         zmax=hm_reordered.values.max(),
     ))
+
+    if category_order:
+        fig.update_yaxes(categoryorder='array', categoryarray=category_order)
 
     fig.update_traces(
         xgap=1,
