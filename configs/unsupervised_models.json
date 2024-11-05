@@ -1,9 +1,28 @@
 {
+    "Analyses": [
+        {
+            "type": "PCA",
+            "normalization": ["none", "minmax", "standard"],
+            "total_components": 100,
+            "components_for_reconstruction": [1, 10, 25, 50, 75]
+        },
+        {
+            "type": "NMF",
+            "normalization": ["none"],
+            "total_components": 50,
+            "components_for_reconstruction": [1, 5, 15, 30]
+        },
+        {
+            "type": "FastICA",
+            "normalization": ["standard"],
+            "total_components": 50,
+            "components_for_reconstruction": [1, 5, 15, 30]
+        }
+    ],
     "FastICA": {
         "module": "sklearn.decomposition",
         "class": "FastICA",
         "params": {
-            "n_components": 30,
             "max_iter": 500,
             "tol": 0.0001,
             "random_state": 42
@@ -13,7 +32,6 @@
         "module": "sklearn.decomposition",
         "class": "NMF",
         "params": {
-            "n_components": 50,
             "init": "nndsvda",
             "max_iter": 500,
             "tol": 0.0001,
@@ -24,7 +42,6 @@
         "module": "sklearn.decomposition",
         "class": "PCA",
         "params": {
-            "n_components": 100,
             "whiten": true,
             "svd_solver": "auto",
             "random_state": 42

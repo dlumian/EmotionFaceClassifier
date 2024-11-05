@@ -1,0 +1,53 @@
+
+
+{
+    "plot_settings": {
+        "figsize": [8, 6],
+        "dpi": 300
+    },
+    "figure_title": {
+        "title": null,
+        "fontsize": 24,
+        "color": "black",
+        "fontweight": "bold",
+        "y": 1.05
+    },
+    "x_params": {
+        "xticks": [],
+        "xlim": null,
+        "labelsize": null,
+        "labelrotation": null 
+    },
+    "y_params": {
+        "yticks": [],
+        "ylim": null,
+        "labelsize": null,
+        "labelcolor": null
+    },
+    "spine_params": {
+        "top": {
+            "linewidth": 1.5,
+            "edgecolor": "gray"
+        },
+        "bottom": {
+            "linewidth": 1.5,
+            "edgecolor": "gray"
+        },
+        "left": {
+            "linewidth": 2.0,
+            "edgecolor": "black"
+        },
+        "right": {
+            "linewidth": 0.5,
+            "edgecolor": "red"
+        }
+    },
+    "text_box": {
+        "text": null,
+        "position": [0.95, 1.02],
+        "fontsize": 14,
+        "color": "black",
+        "fontweight": "normal",
+        "ha": "right"
+    }
+}

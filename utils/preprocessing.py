@@ -2,7 +2,6 @@ import os
 import numpy as np
 from PIL import Image
 
-
 def convert_pixels_to_array(pixels):
     'Reshape pixel arrays into 2-D format from flat vector'
     array = np.array([int(x) for x in pixels.split(' ')]).reshape(48, 48)
