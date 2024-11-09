@@ -179,6 +179,12 @@ def plot_matrix(image_dict, row_labels=None):
     # Plot each image in the remaining columns
     for col_idx, (col_label, images) in enumerate(image_dict.items()):
         for row_idx in range(num_rows):
+            print(f'col_idx: {col_idx}')
+            print(f'col_label: {col_label}')
+            print(f'row_idx: {row_idx}')
+            print(f'extra_col: {extra_col}')
+
+
             ax = axes[row_idx, col_idx + extra_col]
 
             if row_idx < len(images):
