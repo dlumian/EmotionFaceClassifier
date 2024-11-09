@@ -261,19 +261,29 @@ def plot_emotion_waffle(
         output_path: str = None
 ) -> None:
     """
-    Plot a waffle chart with subplots for each group specified by split_column.
-    Each subplot displays the number of items in each category of group_column.
+    Plot a waffle chart to visualize emotion expression image counts by usage.
+
+    Parameters:
+        dataframe (pd.DataFrame): The source data containing counts for each emotion and usage category.
+        count_column (str): The column name representing the count of images for each category-usage pair.
+        group_column (str): The column name representing categories (e.g., emotion) in the dataframe.
+        split_column (str, optional): The column name to split the data into subplots. Defaults to None.
+        color_column (str, optional): The column name for the color to use for each category in the dataframe. Defaults to None.
+        rows (int, optional): The number of rows in the waffle chart. Defaults to 20.
+        columns (int, optional): The number of columns in the waffle chart. Defaults to 20.
+        output_path (str, optional): The file path to save the heatmap image. Defaults to None.
     """
     if split_column and len(dataframe[split_column].unique()) > 2:
         raise ValueError("Only 1 or 2 subplots are supported.")
 
+    group_titles = list(dataframe[split_column].unique()) if split_column else ['All Data']
     # Prepare plot configurations
     plot_configs = {}
     subplot_ids = [111, 122]
     items_per_tile_info = {}
 
     # Generate waffle chart data for each subplot group
-    for i, group in enumerate(dataframe[split_column].unique() if split_column else ['All Data']):
+    for i, group in enumerate(group_titles):
         group_df = dataframe[dataframe[split_column] == group].copy() if split_column else dataframe.copy()
         subplot_df, items_per_tile = calculate_waffle_counts(
             dataframe=group_df, 
@@ -286,10 +296,15 @@ def plot_emotion_waffle(
             dataframe=subplot_df, 
             group_column=group_column, 
             tile_count_column='waffle_tiles', 
-            title=group, 
+            title=group,  # Use the group name as the title
             color_column=color_column
         )
-        plot_configs[subplot_ids[i]] = waffle_info
+        plot_configs[subplot_ids[i]] = {
+            'values': waffle_info['values'],
+            'labels': waffle_info['labels'],
+            'colors': waffle_info['colors'],
+            'label': group  # Use the group name as the title
+        }
 
     # Create the waffle figure
     fig = plt.figure(
@@ -300,6 +315,7 @@ def plot_emotion_waffle(
         rounding_rule='ceil',
         figsize=(20, 10)
     )
+    plt.subplots_adjust(wspace=0.5, hspace=0.5)
 
     # Add a unified legend to the figure
     legend_handles = [Patch(facecolor=color, label=label) for label, color in zip(waffle_info['labels'], waffle_info['colors'])]
@@ -308,23 +324,23 @@ def plot_emotion_waffle(
         loc='lower center',
         bbox_to_anchor=(0.5, -0.1),
         ncol=len(waffle_info['labels']),
-        fontsize=16,
-        title="Emotion Expression",
-        title_fontsize=16
+        prop={'size': 20,
+            'weight': 'bold'}
     )
 
-    # Add annotations for items per tile
-    fig.text(0.03, 0.01, f"For training data, each square represents {items_per_tile_info.get('Training', 0):.1f} images.", ha='left', va='top', fontsize=12)
-    fig.text(0.95, 0.01, f"For testing data, each square represents {items_per_tile_info.get('Testing', 0):.1f} images.", ha='right', va='top', fontsize=12)
+    # Add main title and subtitles
+    fig.suptitle('Emotion Counts by Expression', fontsize=26, y=1.05, fontweight='bold')
 
-    # Final adjustments and save/show the figure
-    plt.tight_layout(rect=[0, 0.05, 1, 1])
-    fig.suptitle('Image Counts by Emotion Expression', fontsize=24, fontweight='bold')
+    # Remove individual subplot legends
+    for idx, ax in enumerate(fig.axes):
+        ax.get_legend().remove()
+        ax.set_title(group_titles[idx], fontsize=20, fontweight='bold', pad=10) 
+
+    fig.tight_layout()
+    # Save the figure
     if output_path:
-        plt.savefig(output_path, bbox_inches='tight')
-    plt.show()
-    # Close the figure to free memoryœ
-    plt.close(fig)
+        fig.savefig(output_path, bbox_inches='tight')
+        print(f'Figure saved to {output_path}')
 
 def plot_emotion_heatmap(
     dataframe: pd.DataFrame, 
@@ -385,6 +401,11 @@ def plot_emotion_heatmap(
         height=400,
         paper_bgcolor='white',
         plot_bgcolor='white',
+        title_x=0.5,  # Center the top title
+        title_font_size=20,  # Increase font size of top title
+        xaxis_title_font_size=16,  # Increase font size of x-axis title
+        yaxis_title_font_size=16,  # Increase font size of y-axis title
+        font_size=14  # Increase font size of row/col labels
     )
 
     # Save the heatmap as an image if output path is provided
