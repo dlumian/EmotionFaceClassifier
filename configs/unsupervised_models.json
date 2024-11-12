@@ -4,25 +4,46 @@
             "type": "PCA",
             "normalization": ["none", "minmax", "standard"],
             "total_components": 100,
-            "components_for_reconstruction": [1, 10, 25, 50, 75]
+            "components_for_reconstruction": [1, 10, 25, 50, 75, 100]
         },
         {
             "type": "NMF",
-            "normalization": ["none"],
+            "normalization": ["none", "minmax"],
             "total_components": 50,
-            "components_for_reconstruction": [1, 5, 15, 30]
+            "components_for_reconstruction": [1, 5, 15, 30, 50]
         },
         {
             "type": "FastICA",
             "normalization": ["standard"],
             "total_components": 50,
-            "components_for_reconstruction": [1, 5, 15, 30]
+            "components_for_reconstruction": [1, 5, 15, 30, 50]
         }
     ],
+    "Normalizers": {
+        "none": {
+            "module": null,
+            "class": null,
+            "params": {}
+        },
+        "minmax": {
+            "module": "sklearn.preprocessing",
+            "class": "MinMaxScaler",
+            "params": {
+                "feature_range": [0, 1]
+            }
+        },
+        "standard": {
+            "module": "sklearn.preprocessing",
+            "class": "StandardScaler",
+            "params": {}
+        }
+    },
     "FastICA": {
         "module": "sklearn.decomposition",
         "class": "FastICA",
         "params": {
+            "algorithm": "parallel",
+            "fun": "logcosh",
             "max_iter": 500,
             "tol": 0.0001,
             "random_state": 42
@@ -33,6 +54,8 @@
         "class": "NMF",
         "params": {
             "init": "nndsvda",
+            "solver": "cd",
+            "beta_loss": "frobenius",
             "max_iter": 500,
             "tol": 0.0001,
             "random_state": 42
@@ -42,8 +65,8 @@
         "module": "sklearn.decomposition",
         "class": "PCA",
         "params": {
+            "svd_solver": "randomized",
             "whiten": true,
-            "svd_solver": "auto",
             "random_state": 42
         }
     }
