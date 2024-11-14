@@ -509,3 +509,6 @@ def run_dimensionality_reduction(
         results[category] = averaged_category_reconstruction
 
     return results, valid_components_used
+
+
+
