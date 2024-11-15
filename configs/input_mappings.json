@@ -26,6 +26,7 @@
     "plotly_styles":{
         "Training": {
             "color": {
+                "Overall": "black",
                 "Angry": "red", 
                 "Disgust": "olive", 
                 "Fear": "slategray", 
@@ -45,6 +46,7 @@
         },
         "Testing": {
             "color": {
+                "Overall": "black",
                 "Angry": "red", 
                 "Disgust": "olive", 
                 "Fear": "slategray", 
