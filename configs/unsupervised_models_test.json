@@ -3,8 +3,8 @@
         "module": "sklearn.decomposition",
         "class": "FastICA",
         "normalization": "standard",
-        "total_components": 30,
-        "components_for_reconstruction": [1, 10, 30],
+        "total_components": 100,
+        "components_for_reconstruction": [1, 10, 30, 50, 100],
         "params": {
             "algorithm": "parallel",
             "fun": "logcosh",
@@ -17,8 +17,8 @@
         "module": "sklearn.decomposition",
         "class": "NMF",
         "normalization": "none",
-        "total_components": 30,
-        "components_for_reconstruction": [1, 10, 30],
+        "total_components": 100,
+        "components_for_reconstruction": [1, 10, 30, 50, 100],
         "params": {
             "init": "random",
             "solver": "mu",
@@ -32,8 +32,8 @@
         "module": "sklearn.decomposition",
         "class": "PCA",
         "normalization": "standard",
-        "total_components": 30,
-        "components_for_reconstruction": [1, 10, 30],
+        "total_components": 100,
+        "components_for_reconstruction": [1, 10, 30, 50, 100],
         "params": {
             "svd_solver": "randomized",
             "whiten": true,
