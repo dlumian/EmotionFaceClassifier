@@ -23,18 +23,18 @@
         "Surprise", 
         "Neutral"
     ],
+    "color_dict": {
+        "Overall": "black",
+        "Angry": "red", 
+        "Disgust": "olive", 
+        "Fear": "slategray", 
+        "Happy": "gold", 
+        "Sad": "blue", 
+        "Surprise": "darkviolet",
+        "Neutral": "sienna"
+    },
     "plotly_styles":{
         "Training": {
-            "color": {
-                "Overall": "black",
-                "Angry": "red", 
-                "Disgust": "olive", 
-                "Fear": "slategray", 
-                "Happy": "gold", 
-                "Sad": "blue", 
-                "Surprise": "darkviolet",
-                "Neutral": "sienna"
-            },
             "opacity": 1.0,
             "line":{
                 "color": "black",
@@ -45,16 +45,6 @@
             }
         },
         "Testing": {
-            "color": {
-                "Overall": "black",
-                "Angry": "red", 
-                "Disgust": "olive", 
-                "Fear": "slategray", 
-                "Happy": "gold", 
-                "Sad": "blue", 
-                "Surprise": "darkviolet",
-                "Neutral": "sienna"
-            },
             "opacity": 0.7,
             "line":{
                 "color": "grey",

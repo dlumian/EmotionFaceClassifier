@@ -1,6 +1,23 @@
+import time
+import logging
 import importlib
-from copy import deepcopy
-from collections.abc import Mapping
+from functools import wraps
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
+
+def timeit(func):
+    @wraps(func)
+    def timeit_wrapper(*args, **kwargs):
+        start_time = time.perf_counter()
+        result = func(*args, **kwargs)
+        end_time = time.perf_counter()
+        total_time = end_time - start_time
+        # Log the timing
+        logging.info(f'Function {func.__name__} Took {total_time:.4f} seconds')
+        # Print the timing (optional)
+        print(f'Function {func.__name__} Took {total_time:.4f} seconds')
+        
+        return result
+    return timeit_wrapper
 
 def instantiate_model(model_config):
     'Function to create model instances from the configuration'
@@ -9,15 +26,15 @@ def instantiate_model(model_config):
     model= model_class(**model_config['params'])
     return model
 
-def deep_update(base, updates):
-    """
-    Recursively updates nested dictionaries. Values in `updates` override those in `base`.
-    Automatically creates a deepcopy of `base` to prevent modifications to the original dictionary.
-    """
-    base = deepcopy(base)  # Ensure base is not modified
-    for key, value in updates.items():
-        if isinstance(value, Mapping) and key in base:
-            base[key] = deep_update(base.get(key, {}), value)
-        else:
-            base[key] = value
-    return base
+def normalize_data(data, normalizer='none'):
+    """Normalize the data using the specified method."""
+    if normalizer == 'none':
+        return data, None
+    elif normalizer == 'minmax':
+        scaler = MinMaxScaler()
+        return scaler.fit_transform(data), scaler
+    elif normalizer == 'standard':
+        scaler = StandardScaler()
+        return scaler.fit_transform(data), scaler
+    else:
+        raise ValueError(f"Unknown normalization method: {normalizer}")

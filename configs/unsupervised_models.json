@@ -1,46 +1,10 @@
 {
-    "Analyses": [
-        {
-            "type": "PCA",
-            "normalization": ["none", "minmax", "standard"],
-            "total_components": 100,
-            "components_for_reconstruction": [1, 10, 25, 50, 75, 100]
-        },
-        {
-            "type": "NMF",
-            "normalization": ["none", "minmax"],
-            "total_components": 50,
-            "components_for_reconstruction": [1, 5, 15, 30, 50]
-        },
-        {
-            "type": "FastICA",
-            "normalization": ["standard"],
-            "total_components": 50,
-            "components_for_reconstruction": [1, 5, 15, 30, 50]
-        }
-    ],
-    "Normalizers": {
-        "none": {
-            "module": null,
-            "class": null,
-            "params": {}
-        },
-        "minmax": {
-            "module": "sklearn.preprocessing",
-            "class": "MinMaxScaler",
-            "params": {
-                "feature_range": [0, 1]
-            }
-        },
-        "standard": {
-            "module": "sklearn.preprocessing",
-            "class": "StandardScaler",
-            "params": {}
-        }
-    },
     "FastICA": {
         "module": "sklearn.decomposition",
         "class": "FastICA",
+        "normalization": "standard",
+        "total_components": 100,
+        "components_for_reconstruction": [1, 10, 30, 50, 100],
         "params": {
             "algorithm": "parallel",
             "fun": "logcosh",
@@ -52,6 +16,9 @@
     "NMF": {
         "module": "sklearn.decomposition",
         "class": "NMF",
+        "normalization": "none",
+        "total_components": 100,
+        "components_for_reconstruction": [1, 10, 30, 50, 100],
         "params": {
             "init": "random",
             "solver": "mu",
@@ -64,6 +31,9 @@
     "PCA": {
         "module": "sklearn.decomposition",
         "class": "PCA",
+        "normalization": "standard",
+        "total_components": 100,
+        "components_for_reconstruction": [1, 10, 30, 50, 100],
         "params": {
             "svd_solver": "randomized",
             "whiten": true,
