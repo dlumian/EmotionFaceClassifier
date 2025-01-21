@@ -1,21 +1,29 @@
 # Emotion Face Classifier
 
-Computer vision project to classify facial expressions into one of 6 emotion types: 
-- Angry
-- Fear
-- Happy
-- Sad
-- Surprise 
-- Neutral
+Computer vision project to classify facial expressions into 7 emotion categories: 
 
-**Disgust** is included but underrepresented. Therefore, it is dropped from current analyses.
+Categories are: Angry, Disgust, Fear, Happy, Sad, Surprise, Neutral.
+
+Process includes EDA, image feature extraction (unsupervised), and classification.
 
 ## Sections
+- [Project Structure](#project-structure)
 - [Data Source: FER 2013](#data-source-fer-2013)
 - [Model Type Overview](#model-type-overview)
     - [Vectorized Models](#vectorized-models)\
     - [Deep-Learning Models](#deep-learning-models)
--[Reset Project](#reset-project)
+
+## Project Structure
+[Return to Top](#sections)
+
+- [configs](./configs)
+    - input_mappings.json: project details such as emotion-label mapping and plotting styles
+    - unsupervised_models.json: model configurement for feature extration
+    - vectorized_models.json: model configurement for classification models using vectorized input
+- [data](./data/)
+    - [Initial data](#data-source-fer-2013) with readme
+    - Intermediate data saved here during analysis
+- []
 
 ## Data Source: FER 2013
 
@@ -29,6 +37,18 @@ Data comes from a Kaggle dataset. Images are 48x48 pixels and in greyscale.
     - Current analyses combines public and private tests
     - Data must be downloaded from Kaggle
     - When uncompressed, move `fer2013.csv` into path: `EmotionFaceClassifier/data/fer2013.csv`
+
+![Image Counts by Category](./imgs/counts/emotion_img_counts_stacked_totals.png)
+
+## Notebooks
+
+- [0_reset_project.ipynb](./notebooks/0_reset_project.ipynb)
+
+    This optional notebook removes existing intermediate data, images, and models but leaves the original csv data, readme, and code in place. Its use accelerates rapid iterations when trying to replicate or expand analysis or when using this repo as a learning tool.
+
+    If unfamiliar with file pattern matching, skip this notebook and remove unwanted files by hand.
+
+- 
 
 ## Model Type Overview
 Two primary modeling approaches are explored: vectorized and deep-learning approaches. In short,vectorized models are simpler and treat images as flat arrays of pixels, making them easier to use but less effective for capturing the inherent structure of image data.
@@ -45,11 +65,6 @@ Advanced models like Convolutional Neural Networks (CNNs) keep the 2D structure 
 These models are capable of automatically learning spatial hierarchies of features through layers of convolutional filters, pooling, and fully connected layers. They can capture edges, textures, shapes, and more complex features as the network deepens.
 These models excel at complex image classification tasks due to their ability to understand and utilize the spatial relationships between pixels. 
 The primary advantages of deep-learning models is improved accuracy and state-of-the-art performance due to leveraging spatial relationships of the image. 
-
-## Reset Project
-A [notebook](./notebooks/0_reset_project.ipynb) exists to remove intermediate and results data from repo. This convenience allows for testing and training iterations with minimal effort needed to reset repo settings to baseline. 
-
-Defaults for data to be removed include directories (`data/intermediate_data`, `models`, `imgs`, and `metrics`) and resets all notebooks in `notebook` dir. 
 
 ## To-Do
 - environment files

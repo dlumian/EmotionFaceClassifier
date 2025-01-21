@@ -23,7 +23,7 @@
             "init": "random",
             "solver": "mu",
             "beta_loss": "frobenius",
-            "max_iter": 1000,
+            "max_iter": 5000,
             "tol": 0.00001,
             "random_state": 42
         }

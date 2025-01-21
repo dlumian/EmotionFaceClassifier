@@ -97,13 +97,11 @@ def generate_pixel_intensities(X, y, color_dict=None, save_path=None):
         # Set the font size for x and y ticks
         axes[idx].tick_params(axis='x', labelsize=tick_fontsize)
 
-        axes[idx].spines['left'].set_linewidth(8)
-        axes[idx].spines['left'].set_edgecolor(color)
-
         axes[idx].spines['bottom'].set_linewidth(8)
-        axes[idx].spines['bottom'].set_edgecolor(color)
+        axes[idx].spines['bottom'].set_edgecolor('black')
 
-        # Remove the top and right spines
+        # Remove the left, top and right spines
+        axes[idx].spines['left'].set_visible(False)
         axes[idx].spines['top'].set_visible(False)
         axes[idx].spines['right'].set_visible(False)
 
