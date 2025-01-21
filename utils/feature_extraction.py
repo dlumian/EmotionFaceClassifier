@@ -1,20 +1,12 @@
 import os
 import logging
-import warnings
 import numpy as np
 from copy import deepcopy
 from datetime import datetime
 from sklearn.base import clone
 from datascifuncs.tidbit_tools import print_json, write_json
 from .preprocessing import plot_face_matrix
-from .analysis_tools import instantiate_model, normalize_data, timeit
-
-def suppress_warnings(func):
-    def wrapper(*args, **kwargs):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", category=FutureWarning)
-            return func(*args, **kwargs)
-    return wrapper
+from .analysis_tools import instantiate_model, normalize_data, timeit, suppress_warnings
 
 def generate_analysis_paths(analysis_config):
     model_type = analysis_config['class']
@@ -121,6 +113,7 @@ def run_single_analysis(X, y, analysis_config):
     if os.path.exists(json_path) and os.path.exists(npz_path):
         print(f"Analysis already exists. Skipping analysis.")
         logging.info(f"Analysis already exists. Skipping analysis.")
+        print('\n\n')
         return None
 
     unique_categories = np.unique(y)
@@ -133,7 +126,7 @@ def run_single_analysis(X, y, analysis_config):
     logging.basicConfig(filename=log_path, level=logging.INFO,
                         format='%(asctime)s:%(levelname)s:%(message)s',
                         force=True) 
-    logging.info(f"Analysis state time: {datetime.now()}.")
+    logging.info(f"Analysis start time: {datetime.now()}.")
 
     print(f"Analysis settings:")
     print_json(analysis_config)

@@ -1,5 +1,6 @@
 import time
 import logging
+import warnings
 import importlib
 from functools import wraps
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
@@ -18,6 +19,13 @@ def timeit(func):
         
         return result
     return timeit_wrapper
+
+def suppress_warnings(func):
+    def wrapper(*args, **kwargs):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=FutureWarning)
+            return func(*args, **kwargs)
+    return wrapper
 
 def instantiate_model(model_config):
     'Function to create model instances from the configuration'

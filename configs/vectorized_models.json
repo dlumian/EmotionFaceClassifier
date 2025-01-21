@@ -2,31 +2,40 @@
     "LGBM": {
         "module": "lightgbm",
         "class": "LGBMClassifier",
+        "normalization": "none",
         "params": {}
     },
     "LogisticRegression": {
         "module": "sklearn.linear_model",
         "class": "LogisticRegression",
+        "normalization": "standard",
         "params": {
             "multi_class": "multinomial",
-            "max_iter": 500
+            "max_iter": 500,
+            "class_weight": "balanced"
         }
     },
     "DecisionTree": {
         "module": "sklearn.tree",
         "class": "DecisionTreeClassifier",
+        "normalization": "none",
         "params": {}
     },
     "RandomForest": {
         "module": "sklearn.ensemble",
         "class": "RandomForestClassifier",
-        "params": {}
+        "normalization": "none",
+        "params": {
+            "class_weight": "balanced"
+        }
     },
     "XGBoost": {
         "module": "xgboost",
         "class": "XGBClassifier",
+        "normalization": "none",
         "params": {
-            "eval_metric": "mlogloss"
+            "eval_metric": "mlogloss",
+            "class_weight": "balanced"
         }
     }
 }

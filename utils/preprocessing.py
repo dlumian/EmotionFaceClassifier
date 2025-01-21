@@ -102,10 +102,10 @@ def plot_face_matrix(
 
     # Set the main title and subtitle
     if main_title:
-        fig.suptitle(main_title, fontsize=26, fontweight='bold', y=1.05)
+        fig.suptitle(main_title, fontsize=26, fontweight='bold', y=1.02)
     
     if box_text:
-        fig.text(0.95, 1.05, box_text, ha='right', va='top', fontsize=20, transform=fig.transFigure)
+        fig.text(0.95, 1.02, box_text, va='top', fontsize=20, multialignment='left', transform=fig.transFigure)
 
     if row_labels:
         for title, labels in row_labels.items():
