@@ -10,7 +10,7 @@ Process includes EDA, image feature extraction (unsupervised), and classificatio
 - [Project Structure](#project-structure)
 - [Data Source: FER 2013](#data-source-fer-2013)
 - [Model Type Overview](#model-type-overview)
-    - [Vectorized Models](#vectorized-models)\
+    - [Vectorized Models](#vectorized-models)
     - [Deep-Learning Models](#deep-learning-models)
 
 ## Project Structure

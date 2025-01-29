@@ -27,6 +27,9 @@ def suppress_warnings(func):
             return func(*args, **kwargs)
     return wrapper
 
+def data_loader(all=True, mapping_json=False, df=False,
+                unsupervised_json=False, vectorized_json=False):
+
 def instantiate_model(model_config):
     'Function to create model instances from the configuration'
     module = importlib.import_module(model_config['module'])
